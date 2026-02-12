@@ -31,6 +31,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
+import { BulkPlaceUploader } from "@/components/admin/BulkPlaceUploader";
 
 export default function AdminSettingsPage() {
     const [loading, setLoading] = useState(true);
@@ -139,6 +140,18 @@ export default function AdminSettingsPage() {
             </div>
 
             <div className="grid gap-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Bulk Data Management</CardTitle>
+                        <CardDescription>
+                            Import places and other data in bulk.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <BulkPlaceUploader />
+                    </CardContent>
+                </Card>
+
                 <Card>
                     <CardHeader>
                         <CardTitle>General Campaign Info</CardTitle>

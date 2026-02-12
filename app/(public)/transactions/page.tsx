@@ -71,7 +71,7 @@ export default function TransactionsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-[#FFF9ED] text-foreground pb-10 font-sans">
+        <div className="min-h-screen bg-white text-foreground pb-10 font-sans">
             {/* Header */}
             <div className="bg-[#134E4A] text-white pt-8 pb-16 px-6  relative mb-8 shadow-xl">
                 <div className="flex items-center mb-8">

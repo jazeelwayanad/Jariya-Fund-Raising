@@ -184,7 +184,7 @@ export default function AdminBatchesPage() {
                 </div>
                 <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm() }}>
                     <DialogTrigger asChild>
-                        <Button>
+                        <Button className="bg-[#115E59] hover:bg-[#0f504c] text-white">
                             <Plus className="mr-2 h-4 w-4" /> Create Batch
                         </Button>
                     </DialogTrigger>
@@ -212,7 +212,7 @@ export default function AdminBatchesPage() {
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="status">Status</Label>
-                                    <Select value={formStatus} onValueChange={(v: "Active" | "Completed" | "Archived") => setFormStatus(v)}>
+                                <Select value={formStatus} onValueChange={(v: "Active" | "Completed" | "Archived") => setFormStatus(v)}>
                                     <SelectTrigger>
                                         <SelectValue />
                                     </SelectTrigger>
@@ -225,7 +225,7 @@ export default function AdminBatchesPage() {
                             </div>
                         </div>
                         <DialogFooter>
-                            <Button onClick={handleSave} disabled={processing}>{processing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save Batch</Button>
+                            <Button onClick={handleSave} disabled={processing} className="bg-[#115E59] hover:bg-[#0f504c] text-white">{processing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save Batch</Button>
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>

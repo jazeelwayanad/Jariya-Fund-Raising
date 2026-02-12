@@ -306,7 +306,7 @@ export default function AdminDonationsPage() {
                     </Button>
                     <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                         <DialogTrigger asChild>
-                            <Button>
+                            <Button className="bg-[#115E59] hover:bg-[#0f504c] text-white">
                                 <Plus className="mr-2 h-4 w-4" />
                                 Add Donation
                             </Button>
@@ -443,7 +443,7 @@ export default function AdminDonationsPage() {
                             </div>
                             <DialogFooter>
                                 <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
-                                <Button onClick={handleCreateDonation} disabled={submitting}>
+                                <Button onClick={handleCreateDonation} disabled={submitting} className="bg-[#115E59] hover:bg-[#0f504c] text-white">
                                     {submitting ? "Adding..." : "Add Donation"}
                                 </Button>
                             </DialogFooter>
@@ -601,7 +601,7 @@ export default function AdminDonationsPage() {
                                             }
                                             className={
                                                 donation.paymentStatus === "SUCCESS"
-                                                    ? "bg-green-100 text-green-700 hover:bg-green-100 border-green-200 shdow-none"
+                                                    ? "bg-green-100 text-green-700 hover:bg-green-100 border-green-200 shadow-none"
                                                     : donation.paymentStatus === "PENDING"
                                                         ? "bg-yellow-100 text-yellow-700 hover:bg-yellow-100 border-yellow-200"
                                                         : "bg-red-100 text-red-700 hover:bg-red-100 border-red-200"

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
+import cloudinary from "@/lib/cloudinary";
 
 export async function POST(req: NextRequest) {
     try {
@@ -14,23 +13,20 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const buffer = Buffer.from(await file.arrayBuffer());
-        const filename = Date.now() + "_" + file.name.replaceAll(" ", "_");
+        const arrayBuffer = await file.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
 
-        // Ensure upload directory exists
-        const uploadDir = path.join(process.cwd(), "public/uploads");
-        try {
-            await mkdir(uploadDir, { recursive: true });
-        } catch (e) {
-            // Ignore if directory already exists
-        }
+        const result = await new Promise<any>((resolve, reject) => {
+            cloudinary.uploader.upload_stream(
+                { folder: "jariya_uploads" },
+                (error, result) => {
+                    if (error) reject(error);
+                    else resolve(result);
+                }
+            ).end(buffer);
+        });
 
-        const filePath = path.join(uploadDir, filename);
-        await writeFile(filePath, buffer);
-
-        const fileUrl = `/uploads/${filename}`;
-
-        return NextResponse.json({ url: fileUrl });
+        return NextResponse.json({ url: result.secure_url });
     } catch (error) {
         console.error("Error uploading file:", error);
         return NextResponse.json(

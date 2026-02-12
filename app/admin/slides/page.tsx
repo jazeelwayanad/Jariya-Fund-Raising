@@ -28,9 +28,8 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from "@/components/ui/dialog"
-import { Pencil, Trash2, Plus, GripVertical } from "lucide-react"
+import { Pencil, Trash2, Plus, Upload } from "lucide-react"
 import { toast } from "sonner"
 
 interface Slide {
@@ -50,6 +49,7 @@ export default function SlidesPage() {
     const [loading, setLoading] = useState(true)
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const [editingSlide, setEditingSlide] = useState<Slide | null>(null)
+    const [uploading, setUploading] = useState(false)
     const [formData, setFormData] = useState({
         title: "",
         description: "",
@@ -101,6 +101,35 @@ export default function SlidesPage() {
             })
         }
         setIsDialogOpen(true)
+    }
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        setUploading(true)
+        const formData = new FormData()
+        formData.append("file", file)
+
+        try {
+            const res = await fetch("/api/upload", {
+                method: "POST",
+                body: formData,
+            })
+
+            if (res.ok) {
+                const data = await res.json()
+                setFormData(prev => ({ ...prev, imageUrl: data.url }))
+                toast.success("Image uploaded successfully")
+            } else {
+                toast.error("Failed to upload image")
+            }
+        } catch (error) {
+            console.error("Upload error:", error)
+            toast.error("Upload failed")
+        } finally {
+            setUploading(false)
+        }
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -287,18 +316,58 @@ export default function SlidesPage() {
                                 placeholder="Slide Description"
                             />
                         </div>
+
                         <div className="grid gap-2">
-                            <Label htmlFor="imageUrl">Image URL (Required)</Label>
-                            <Input
-                                id="imageUrl"
-                                value={formData.imageUrl}
-                                onChange={(e) =>
-                                    setFormData({ ...formData, imageUrl: e.target.value })
-                                }
-                                placeholder="https://example.com/image.jpg"
-                                required
-                            />
+                            <Label>Slide Image (Required)</Label>
+                            <div className="space-y-4">
+                                <div className="flex items-center gap-4">
+                                    <Input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleFileUpload}
+                                        disabled={uploading}
+                                        className="hidden"
+                                        id="slide-image-upload"
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() => document.getElementById("slide-image-upload")?.click()}
+                                        disabled={uploading}
+                                    >
+                                        {uploading ? (
+                                            "Uploading..."
+                                        ) : (
+                                            <>
+                                                <Upload className="mr-2 h-4 w-4" /> Upload Image
+                                            </>
+                                        )}
+                                    </Button>
+                                    <span className="text-sm text-muted-foreground">Or enter URL below</span>
+                                </div>
+
+                                <Input
+                                    id="imageUrl"
+                                    value={formData.imageUrl}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, imageUrl: e.target.value })
+                                    }
+                                    placeholder="https://example.com/image.jpg"
+                                    required
+                                />
+
+                                {formData.imageUrl && (
+                                    <div className="relative aspect-video w-full overflow-hidden rounded-lg border">
+                                        <img
+                                            src={formData.imageUrl}
+                                            alt="Preview"
+                                            className="h-full w-full object-cover"
+                                        />
+                                    </div>
+                                )}
+                            </div>
                         </div>
+
                         <div className="grid gap-2">
                             <Label htmlFor="link">Link (Optional)</Label>
                             <Input
@@ -334,7 +403,9 @@ export default function SlidesPage() {
                             </div>
                         </div>
                         <DialogFooter>
-                            <Button type="submit">Save</Button>
+                            <Button type="submit" disabled={uploading}>
+                                {uploading ? "Uploading..." : "Save"}
+                            </Button>
                         </DialogFooter>
                     </form>
                 </DialogContent>

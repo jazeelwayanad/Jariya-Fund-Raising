@@ -11,7 +11,7 @@ export async function middleware(req: NextRequest) {
         if (token) {
             try {
                 const secret = new TextEncoder().encode(
-                    process.env.JWT_SECRET || "your-secret-key-change-this-in-prod"
+                    process.env.JWT_SECRET
                 );
                 await jwtVerify(token, secret);
                 return NextResponse.redirect(new URL("/admin", req.url));
@@ -30,7 +30,7 @@ export async function middleware(req: NextRequest) {
 
         try {
             const secret = new TextEncoder().encode(
-                process.env.JWT_SECRET || "your-secret-key-change-this-in-prod"
+                process.env.JWT_SECRET
             );
             await jwtVerify(token, secret);
             return NextResponse.next();

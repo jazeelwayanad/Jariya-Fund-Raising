@@ -3,16 +3,27 @@ import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { SignJWT } from "jose";
 
+import { z } from "zod";
+
+const loginSchema = z.object({
+    email: z.string().email("Invalid email address"),
+    password: z.string().min(6, "Password must be at least 6 characters"),
+});
+
 export async function POST(req: NextRequest) {
     try {
-        const { email, password } = await req.json();
+        const body = await req.json();
 
-        if (!email || !password) {
+        // Zod Validation
+        const result = loginSchema.safeParse(body);
+        if (!result.success) {
             return NextResponse.json(
-                { error: "Email and password are required" },
+                { error: result.error.issues[0].message },
                 { status: 400 }
             );
         }
+
+        const { email, password } = result.data;
 
         const user = await prisma.user.findUnique({
             where: { email },
@@ -43,7 +54,7 @@ export async function POST(req: NextRequest) {
 
         // Create JWT
         const secret = new TextEncoder().encode(
-            process.env.JWT_SECRET || "your-secret-key-change-this-in-prod"
+            process.env.JWT_SECRET
         );
 
         const token = await new SignJWT({ id: user.id, role: user.role })

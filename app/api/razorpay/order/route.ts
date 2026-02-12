@@ -1,29 +1,41 @@
-
 import { NextResponse } from 'next/server';
 import { razorpay } from '@/lib/razorpay';
 import prisma from '@/lib/prisma';
 import { PaymentMethod } from '@prisma/client';
+import { z } from 'zod';
+
+const orderSchema = z.object({
+    amount: z.coerce.number().positive("Amount must be positive"),
+    name: z.string().optional(),
+    mobile: z.string().optional(),
+    batchId: z.string().optional().nullable(),
+    unitId: z.string().optional().nullable(),
+    placeId: z.string().optional().nullable(),
+    hideName: z.boolean().optional(),
+});
 
 export async function POST(request: Request) {
     try {
         const body = await request.json();
+
+        const result = orderSchema.safeParse(body);
+        if (!result.success) {
+            return NextResponse.json({ error: result.error.issues[0].message }, { status: 400 });
+        }
+
         const {
-            amount, // in rupees
+            amount,
             name,
             mobile,
             batchId,
             unitId,
             placeId,
             hideName
-        } = body;
-
-        if (!amount) {
-            return NextResponse.json({ error: 'Amount is required' }, { status: 400 });
-        }
+        } = result.data;
 
         // Create Order in Razorpay
         const options = {
-            amount: Math.round(parseFloat(amount) * 100), // amount in paise
+            amount: Math.round(amount * 100), // amount in paise
             currency: 'INR',
             receipt: `receipt_${Date.now()}`,
         };
@@ -46,7 +58,7 @@ export async function POST(request: Request) {
         // Create Pending Donation in Database
         await prisma.donation.create({
             data: {
-                amount: parseFloat(amount),
+                amount: amount,
                 name,
                 mobile,
                 batchId: batchId || null,

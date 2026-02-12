@@ -18,7 +18,7 @@ import {
 } from "lucide-react"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 export default function AdminLayout({
     children,
@@ -27,6 +27,11 @@ export default function AdminLayout({
 }) {
     const pathname = usePathname()
     const [isMobileOpen, setIsMobileOpen] = useState(false)
+    const [isMounted, setIsMounted] = useState(false)
+
+    useEffect(() => {
+        setIsMounted(true)
+    }, [])
 
     const sidebarItems = [
         { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -99,17 +104,24 @@ export default function AdminLayout({
             {/* Main Content */}
             <div className="flex flex-1 flex-col overflow-hidden">
                 <header className="flex h-16 items-center gap-4 border-b bg-white px-6 shadow-sm md:hidden">
-                    <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
-                        <SheetTrigger asChild>
-                            <Button variant="ghost" size="icon" className="md:hidden">
-                                <Menu className="h-6 w-6 text-[#115E59]" />
-                                <span className="sr-only">Toggle navigation menu</span>
-                            </Button>
-                        </SheetTrigger>
-                        <SheetContent side="left" className="p-0 border-r-[#115E59] w-64 bg-[#115E59]">
-                            <SidebarContent />
-                        </SheetContent>
-                    </Sheet>
+                    {isMounted && (
+                        <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
+                            <SheetTrigger asChild>
+                                <Button variant="ghost" size="icon" className="md:hidden">
+                                    <Menu className="h-6 w-6 text-[#115E59]" />
+                                    <span className="sr-only">Toggle navigation menu</span>
+                                </Button>
+                            </SheetTrigger>
+                            <SheetContent side="left" className="p-0 border-r-[#115E59] w-64 bg-[#115E59]">
+                                <SidebarContent />
+                            </SheetContent>
+                        </Sheet>
+                    )}
+                    {!isMounted && (
+                        <Button variant="ghost" size="icon" className="md:hidden">
+                            <Menu className="h-6 w-6 text-[#115E59]" />
+                        </Button>
+                    )}
                     <div className="flex items-center gap-2 font-semibold text-[#115E59]">
                         <div className="relative w-8 h-8">
                             <Image

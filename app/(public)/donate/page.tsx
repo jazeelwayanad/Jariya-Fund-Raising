@@ -497,9 +497,15 @@ export default function DonatePage() {
                             id="amount"
                             placeholder="Enter Amount"
                             value={amount}
-                            onChange={(e) => setAmount(e.target.value)}
-                            className="h-12 border-gray-400 rounded-xl bg-white text-base px-4 shadow-none placeholder:text-gray-300 text-gray-800 focus-visible:ring-1 focus-visible:ring-[#115E59]"
-                            type="number"
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                if (/^\d*\.?\d*$/.test(val)) {
+                                    setAmount(val);
+                                }
+                            }}
+                            className="h-12 border-[#115E59] rounded-xl bg-white text-base px-4 shadow-none placeholder:text-gray-300 text-gray-800 focus-visible:ring-2 focus-visible:ring-[#115E59]"
+                            type="text"
+                            inputMode="decimal"
                         />
                         <div className="flex flex-wrap gap-2 pt-1">
                             {presets.map((val) => (
@@ -533,7 +539,7 @@ export default function DonatePage() {
                             placeholder="Enter Name"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="h-12 border-gray-400 rounded-xl bg-white px-4 text-gray-800 shadow-none placeholder:text-gray-300 focus-visible:ring-1 focus-visible:ring-[#115E59]"
+                            className="h-12 border-[#115E59] rounded-xl bg-white px-4 text-gray-800 shadow-none placeholder:text-gray-300 focus-visible:ring-2 focus-visible:ring-[#115E59]"
                         />
                     </div>
 
@@ -599,9 +605,15 @@ export default function DonatePage() {
                             id="phone"
                             placeholder="Mobile Number"
                             value={phone}
-                            onChange={(e) => setPhone(e.target.value)}
-                            className="h-12 border-gray-400 rounded-xl text-gray-800 bg-white pl-[90px] px-4 pl-20 shadow-none placeholder:text-gray-300 focus-visible:ring-1 focus-visible:ring-[#115E59]"
-                            type="tel"
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                if (/^\d*$/.test(val)) {
+                                    setPhone(val);
+                                }
+                            }}
+                            className="h-12 border-[#115E59] rounded-xl text-gray-800 bg-white pl-[90px] px-4 pl-20 shadow-none placeholder:text-gray-300 focus-visible:ring-2 focus-visible:ring-[#115E59]"
+                            type="text"
+                            inputMode="numeric"
                         />
                     </div>
 
@@ -612,7 +624,7 @@ export default function DonatePage() {
                             <div className="flex items-center gap-1.5">
                                 <Checkbox
                                     id="gen-payment"
-                                    className="w-4 h-4 rounded-[3px] border-gray-700 data-[state=checked]:bg-black data-[state=checked]:border-black"
+                                    className="w-4 h-4 rounded-[3px] border-gray-700 data-[state=checked]:bg-[#115E59] data-[state=checked]:border-[#115E59]"
                                     checked={isGeneral}
                                     onCheckedChange={(c) => setIsGeneral(c as boolean)}
                                 />
@@ -623,7 +635,7 @@ export default function DonatePage() {
                         <div className="relative">
                             <div
                                 onClick={() => !isGeneral && setOpenBatchDropdown(!openBatchDropdown)}
-                                className={`h-12 w-full border border-gray-400 rounded-xl bg-white px-3 flex items-center justify-between cursor-pointer transition-colors ${isGeneral ? "opacity-50 cursor-not-allowed bg-gray-50" : "hover:border-[#115E59]"}`}
+                                className={`h-12 w-full border border-[#115E59] rounded-xl bg-white px-3 flex items-center justify-between cursor-pointer transition-colors ${isGeneral ? "opacity-50 cursor-not-allowed bg-gray-50" : "hover:border-[#115E59]"}`}
                             >
                                 <span className={`text-sm ${selectedBatchName ? "text-black" : "text-gray-400"}`}>
                                     {selectedBatchName || "Select Batch"}
@@ -660,7 +672,7 @@ export default function DonatePage() {
                                     onClick={() => { setActiveSection(section.id); setSelectedPlace(""); setPlaceSearch("") }}
                                     className={`rounded-xl h-10 px-8 font-semibold text-base transition-all border ${activeSection === section.id
                                         ? "bg-[#115E59] text-white border-[#115E59] shadow-md"
-                                        : "bg-white border-black text-black hover:bg-gray-50"
+                                        : "bg-white border-gray-200 text-black hover:bg-gray-50"
                                         }`}
                                 >
                                     {section.name}
@@ -676,11 +688,12 @@ export default function DonatePage() {
                         <div className="relative">
                             <div
                                 onClick={() => setOpenPlaceDropdown(!openPlaceDropdown)}
-                                className="h-12 w-full border border-gray-400 rounded-xl bg-white px-3 flex items-center justify-between cursor-pointer hover:border-[#115E59] transition-colors"
+                                className="h-12 w-full border border-[#115E59] rounded-xl bg-white px-3 flex items-center justify-between cursor-pointer hover:border-[#115E59] transition-colors"
                             >
                                 <span className={`text-sm ${selectedPlaceName ? "text-black" : "text-gray-400"}`}>
                                     {selectedPlaceName || "Select Panchayath/Municipality"}
                                 </span>
+
                                 <ChevronDown className={`h-4 w-4 text-gray-500 transition-transform ${openPlaceDropdown ? "rotate-180" : ""}`} />
                             </div>
 
@@ -735,7 +748,7 @@ export default function DonatePage() {
                                 </div>
                                 <RadioGroupItem value="upi" id="upi" className="w-5 h-5 text-black border-2 border-black" />
                             </Label>
-
+                            {/* 
                             <Label htmlFor="qr" className={`flex items-center justify-between border border-gray-400 rounded-xl px-4 py-3.5 bg-white shadow-none cursor-pointer hover:bg-gray-50 ${paymentMethod === 'qr' ? 'ring-2 ring-black border-transparent' : ''}`}>
                                 <div className="flex items-center gap-4">
                                     <div className="w-8 h-8 flex items-center justify-center">
@@ -744,7 +757,7 @@ export default function DonatePage() {
                                     <span className="font-semibold text-base text-gray-800">Scan UPI QR Code</span>
                                 </div>
                                 <RadioGroupItem value="qr" id="qr" className="w-5 h-5 text-black border-2 border-black" />
-                            </Label>
+                            </Label> */}
 
                             <Label htmlFor="card" className={`flex items-center justify-between border border-gray-400 rounded-xl px-4 py-3.5 bg-white shadow-none cursor-pointer hover:bg-gray-50 ${paymentMethod === 'card' ? 'ring-2 ring-black border-transparent' : ''}`}>
                                 <div className="flex items-center gap-4">

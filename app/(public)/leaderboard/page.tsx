@@ -50,7 +50,7 @@ export default function LeaderboardPage() {
     };
 
     return (
-        <div className="min-h-screen bg-white text-foreground pb-20 font-sans">
+        <div className="min-h-screen bg-[#FFF9ED] text-foreground pb-20 font-sans">
             {/* Header */}
             <div className="bg-[#116C72] text-white pt-8 pb-16 px-6 relative mb-5 shadow-xl">
                 <div className="flex items-center mb-8">
@@ -71,7 +71,7 @@ export default function LeaderboardPage() {
                             <TabsTrigger
                                 key={tab}
                                 value={tab.toLowerCase()}
-                                className="flex-none rounded-full border border-black/80 px-4 py-1.5 bg-transparent shadow-none data-[state=active]:bg-[#FFE8A3] data-[state=active]:text-black data-[state=active]:border-[#FFE8A3] data-[state=active]:shadow-none transition-all font-semibold text-xs text-black"
+                                className="flex-none rounded-full border border-black/40 px-4 py-1.5 bg-transparent text-gray-800 font-bold text-sm shadow-none data-[state=active]:!bg-[#FFF1C5] data-[state=active]:!text-gray-800 data-[state=active]:!border-[#FFE8A3] data-[state=active]:!shadow-none hover:!text-gray-800"
                             >
                                 {tab}
                             </TabsTrigger>

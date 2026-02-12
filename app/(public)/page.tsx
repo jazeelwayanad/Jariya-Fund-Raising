@@ -101,12 +101,12 @@ export default function Home() {
 
           <div className="flex justify-center gap-4 relative z-10 w-full max-w-sm mx-auto">
             <Link href="/leaderboard" className="flex-1">
-              <Button variant="outline" className="w-full rounded-full bg-[#2D7A75] border-transparent text-white hover:bg-[#256661] hover:text-white px-2 py-5 shadow-sm text-sm font-medium">
+              <Button className="w-full rounded-full bg-[#2D7A75] border-none text-white hover:bg-[#256661] hover:text-white px-2 py-5 shadow-sm text-sm font-medium">
                 Toppers
               </Button>
             </Link>
             <Link href="/transactions" className="flex-1">
-              <Button variant="outline" className="w-full rounded-full bg-[#2D7A75] border-transparent text-white hover:bg-[#256661] hover:text-white px-2 py-5 shadow-sm text-sm font-medium">
+              <Button className="w-full rounded-full bg-[#2D7A75] border-none text-white hover:bg-[#256661] hover:text-white px-2 py-5 shadow-sm text-sm font-medium">
                 Transactions
               </Button>
             </Link>
@@ -132,7 +132,7 @@ export default function Home() {
               <TabsTrigger
                 key={tab}
                 value={tab.toLowerCase()}
-                className="flex-none rounded-full border border-black/40 px-4 py-1.5 bg-transparent text-gray-800 font-semibold text-xs shadow-none data-[state=active]:bg-[#FFF1C5] data-[state=active]:text-gray-800 data-[state=active]:border-[#FFE8A3] data-[state=active]:shadow-none"
+                className="flex-none rounded-full border border-black/40 px-4 py-1.5 bg-transparent text-gray-800 font-bold text-sm shadow-none data-[state=active]:!bg-[#FFF1C5] data-[state=active]:!text-gray-800 data-[state=active]:!border-[#FFE8A3] data-[state=active]:!shadow-none hover:!text-gray-800"
               >
                 {tab}
               </TabsTrigger>

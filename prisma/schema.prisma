@@ -1,0 +1,184 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(STAFF)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Role {
+  SUPERADMIN
+  STAFF
+  VIEWER
+}
+
+// --- Geographic Hierarchy ---
+
+model Section {
+  id        String     @id @default(cuid())
+  name      String
+  type      SectionType
+  category  String     @default("KERALA") // "KERALA" or "OTHERS"
+  districts District[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  donations Donation[]
+}
+
+enum SectionType {
+  State
+  Section
+  Country
+  Other
+}
+
+model District {
+  id        String   @id @default(cuid())
+  name      String
+  sectionId String   
+  section   Section  @relation(fields: [sectionId], references: [id])
+  places    Place[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  donations Donation[]
+}
+
+model Place {
+  id         String    @id @default(cuid())
+  name       String
+  type       PlaceType
+  districtId String    
+  district   District  @relation(fields: [districtId], references: [id])
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  donations  Donation[]
+}
+
+enum PlaceType {
+  Municipality
+  Panchayat
+  Corporation
+  Other
+}
+
+// --- Organizational Units ---
+
+model Unit {
+  id        String     @id @default(cuid())
+  name      String
+  placeIds  String[]   
+  status    UnitStatus @default(Active)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  donations Donation[]
+}
+
+enum UnitStatus {
+  Active
+  Inactive
+}
+
+// --- Batches ---
+
+model Batch {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  year        String
+  description String?
+  status      BatchStatus @default(Active)
+  totalAmount Float       @default(0)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  donations   Donation[]
+}
+
+enum BatchStatus {
+  Active
+  Completed
+  Archived
+}
+
+// --- Donations ---
+
+model Donation {
+  id             String        @id @default(cuid())
+  amount         Float
+  name           String?
+  mobile         String?
+  hideName       Boolean       @default(false)
+  
+  batchId        String?       
+  batch          Batch?        @relation(fields: [batchId], references: [id])
+  
+  unitId         String?       
+  unit           Unit?         @relation(fields: [unitId], references: [id])
+  
+  placeId        String?       
+  place          Place?        @relation(fields: [placeId], references: [id])
+
+  districtId     String?
+  district       District?     @relation(fields: [districtId], references: [id])
+
+  sectionId      String?
+  section        Section?      @relation(fields: [sectionId], references: [id])
+  
+  paymentMethod  PaymentMethod
+  paymentStatus  PaymentStatus @default(PENDING)
+  transactionId  String?       @unique
+  
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+enum PaymentMethod {
+  UPI
+  QR
+  RAZORPAY
+  CASH
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+// --- Settings ---
+
+model Settings {
+  id                String   @id @default(cuid())
+  campaignTitle     String   @default("Jariya Fundraising")
+  totalAmountCached Float    @default(0)
+  razorpayKeyId     String?
+  razorpayKeySecret String?
+  upiId             String?
+  receiptImage      String?
+  receiptConfig     Json?    // Stores coordinates { x, y, fontSize, color } for each field
+  updatedAt         DateTime @updatedAt
+}
+
+
+// --- Slides/Banners ---
+
+model Slide {
+  id          String   @id @default(cuid())
+  title       String?
+  description String?
+  imageUrl    String
+  link        String?
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

@@ -36,9 +36,9 @@ export default function PublicLayout({
                 <div className="absolute bottom-8 text-center space-y-1">
                     <p className="text-sm font-semibold text-[#115E59]">
                         © Sabeelul Hidaya Islamic College
-                    </p>
+                    </p> 
                     <p className="text-xs text-muted-foreground">
-                        Developed by <Link href="https://jazeelwayanad.me" target="_blank" className="hover:text-[#115e59] cursor-pointer">Jazeel Wayanad</Link>
+                        Developed by <a href="https://jazeelwayanad.me" target="_blank" className="hover:text-[#115e59] cursor-pointer">Jazeel Wayanad</a>
                     </p>
                 </div>
             </div>

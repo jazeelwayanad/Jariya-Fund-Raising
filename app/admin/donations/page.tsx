@@ -57,6 +57,10 @@ interface Donation {
     }
     unit?: { id: string; name: string }
     place?: { id: string; name: string }
+    collectedBy?: {
+        name: string
+        username: string | null
+    } | null
 }
 
 interface Batch {

@@ -10,6 +10,8 @@ export function Footer() {
             </footer>
             <div className="text-center text-[9px] text-gray-500 pb-6 font-medium">
                 © Sabeelul Hidaya Islamic College
+                <br />
+                Developed by <Link href="https://jazeelwayanad.me" target="_blank" className="hover:text-[#115e59] cursor-pointer">Jazeel Wayanad</Link>
             </div>
         </>
     )

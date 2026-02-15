@@ -57,7 +57,7 @@ export default function AdminLayout({
                         © Sabeelul Hidaya Islamic College
                     </p>
                     <p className="text-xs text-muted-foreground">
-                        Developed by Jazeel Wayanad
+                        Developed by <Link href="https://jazeelwayanad.me" target="_blank" className="hover:text-[#115e59] cursor-pointer">Jazeel Wayanad</Link>
                     </p>
                 </div>
             </div>

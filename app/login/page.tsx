@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -136,9 +137,8 @@ export default function LoginPage() {
                                 <div className="flex items-center justify-between">
                                     <Label htmlFor="password" className="text-gray-700">Password</Label>
                                 </div>
-                                <Input
+                                <PasswordInput
                                     id="password"
-                                    type="password"
                                     autoComplete="current-password"
                                     required
                                     placeholder="••••••••"

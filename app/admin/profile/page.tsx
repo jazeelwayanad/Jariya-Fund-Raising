@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Loader2, Save } from "lucide-react";
@@ -113,9 +114,8 @@ export default function AdminProfilePage() {
                         <h3 className="text-sm font-medium mb-4 text-muted-foreground">Change Password</h3>
                         <div className="space-y-2">
                             <Label htmlFor="password">New Password</Label>
-                            <Input
+                            <PasswordInput
                                 id="password"
-                                type="password"
                                 value={formData.password}
                                 onChange={e => setFormData({ ...formData, password: e.target.value })}
                                 placeholder="Leave empty to keep current password"

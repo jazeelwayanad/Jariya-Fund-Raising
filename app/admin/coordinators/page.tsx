@@ -32,6 +32,7 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import { PasswordInput } from "@/components/ui/password-input"
 import { Label } from "@/components/ui/label"
 import {
     Select,
@@ -265,7 +266,7 @@ export default function CoordinatorsPage() {
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="password">{editMode ? "New Password (Optional)" : "Password"}</Label>
-                                <Input id="password" type="password" placeholder="••••••••" value={formPassword} onChange={(e) => setFormPassword(e.target.value)} />
+                                <PasswordInput id="password" placeholder="••••••••" value={formPassword} onChange={(e) => setFormPassword(e.target.value)} />
                             </div>
                         </div>
                         <DialogFooter>

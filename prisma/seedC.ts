@@ -4,19 +4,19 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
-    // 1. Super Admin
-    const adminPassword = await bcrypt.hash("JariyaAdMin@7017", 10);
-    const admin = await prisma.user.upsert({
-        where: { email: "jariyaadmin@sabeelulhidaya.info" },
-        update: {},
-        create: {
-            email: "jariyaadmin@sabeelulhidaya.info",
-            name: "Super Admin",
-            password: adminPassword,
-            role: "SUPERADMIN",
-        },
-    });
-    console.log("Super Admin seeded:", admin.email);
+    // // 1. Super Admin
+    // const adminPassword = await bcrypt.hash("JariyaAdMin@7017", 10);
+    // const admin = await prisma.user.upsert({
+    //     where: { email: "jariyaadmin@sabeelulhidaya.info" },
+    //     update: {},
+    //     create: {
+    //         email: "jariyaadmin@sabeelulhidaya.info",
+    //         name: "Super Admin",
+    //         password: adminPassword,
+    //         role: "SUPERADMIN",
+    //     },
+    // });
+    // console.log("Super Admin seeded:", admin.email);
 
     // 2. Batches and Coordinators (Batch 2 to 18)
     for (let i = 2; i <= 18; i++) {

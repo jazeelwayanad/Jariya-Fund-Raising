@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Loader2, ArrowLeft } from "lucide-react";
@@ -132,9 +133,8 @@ export default function CoordinatorProfilePage() {
                             <h3 className="text-sm font-semibold mb-4 text-[#8B4513]">Change Password</h3>
                             <div className="space-y-2">
                                 <Label htmlFor="password" className="text-gray-700 font-medium text-xs">New Password</Label>
-                                <Input
+                                <PasswordInput
                                     id="password"
-                                    type="password"
                                     value={formData.password}
                                     onChange={e => setFormData({ ...formData, password: e.target.value })}
                                     className="h-12 border-[#115E59] rounded-xl bg-white px-4 text-gray-800 shadow-none focus-visible:ring-2 focus-visible:ring-[#115E59]"

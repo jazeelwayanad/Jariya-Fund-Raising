@@ -98,7 +98,7 @@ export default function LoginPage() {
                         <div className="h-8 w-[1px] bg-gray-200"></div>
                         <div className="relative w-30 h-30 mb-[-5px]">
                             <Image
-                                src="/right_side.png"
+                                src="/right_sided.png"
                                 alt="College Logo"
                                 fill
                                 className="object-contain"

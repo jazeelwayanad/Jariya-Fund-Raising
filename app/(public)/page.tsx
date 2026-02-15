@@ -77,7 +77,7 @@ export default function Home() {
       {/* Header Logos */}
       <header className="container px-6 py-6 flex justify-between items-center">
         <img src="/left_side.png" alt="Jariya Logo" className="h-14 w-auto object-contain" />
-        <img src="/right_side.png" alt="College Logo" className="h-14 w-auto object-contain" />
+        <img src="/right_sided.png" alt="College Logo" className="h-14 w-auto object-contain" />
       </header>
 
       {/* Slideshow */}

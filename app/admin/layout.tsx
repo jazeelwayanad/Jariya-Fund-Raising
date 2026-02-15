@@ -28,10 +28,41 @@ export default function AdminLayout({
     const pathname = usePathname()
     const [isMobileOpen, setIsMobileOpen] = useState(false)
     const [isMounted, setIsMounted] = useState(false)
+    const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
         setIsMounted(true)
+        const timer = setTimeout(() => {
+            setIsLoading(false)
+        }, 2500)
+        return () => clearTimeout(timer)
     }, [])
+
+    if (isLoading) {
+        return (
+            <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-white">
+                <div className="animate-in fade-in zoom-in duration-500">
+                    <div className="relative w-40 h-40 md:w-56 md:h-56">
+                        <Image
+                            src="/loading_logo.png"
+                            alt="Loading Logo"
+                            fill
+                            className="object-contain"
+                            priority
+                        />
+                    </div>
+                </div>
+                <div className="absolute bottom-8 text-center space-y-1">
+                    <p className="text-sm font-semibold text-[#115E59]">
+                        © Sabeelul Hidaya Islamic College
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                        Developed by Jazeel Wayanad
+                    </p>
+                </div>
+            </div>
+        )
+    }
 
     const sidebarItems = [
         { name: "Dashboard", href: "/admin", icon: LayoutDashboard },

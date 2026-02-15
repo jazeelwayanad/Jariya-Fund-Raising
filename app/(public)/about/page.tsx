@@ -17,7 +17,7 @@ export default function AboutPage() {
                 {/* Header Logos */}
                 <div className="flex justify-center items-center gap-8 mb-12">
                     <img src="/left_side.png" alt="Jariya Logo" className="h-20 w-auto object-contain" />
-                    <img src="/right_side.png" alt="College Logo" className="h-20 w-auto object-contain" />
+                    <img src="/right_sided.png" alt="College Logo" className="h-20 w-auto object-contain" />
                 </div>
 
                 <div className="bg-white rounded-[2rem] p-8 shadow-sm">

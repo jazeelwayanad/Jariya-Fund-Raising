@@ -17,8 +17,8 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { toast } from "sonner"
-import { PaymentWaiting } from "./PaymentWaiting"
-import { QRCodePayment } from "./QRCodePayment"
+import { PaymentWaiting } from "@/components/payment/PaymentWaiting"
+import { QRCodePayment } from "@/components/payment/QRCodePayment"
 import { PaymentScreens } from "@/components/PaymentScreens"
 
 interface Batch {

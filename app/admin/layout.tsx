@@ -16,7 +16,7 @@ import {
     Building2,
     Layers,
 } from "lucide-react"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { useState, useEffect } from "react"
 
@@ -38,6 +38,7 @@ export default function AdminLayout({
         { name: "Donations", href: "/admin/donations", icon: CreditCard },
         { name: "Places", href: "/admin/places", icon: MapPin },
         { name: "Batches", href: "/admin/batches", icon: Layers },
+        { name: "Coordinators", href: "/admin/coordinators", icon: Users },
         { name: "Units", href: "/admin/units", icon: Building2 },
         { name: "Reports", href: "/admin/reports", icon: BarChart },
         { name: "Slides", href: "/admin/slides", icon: Layers },
@@ -47,7 +48,7 @@ export default function AdminLayout({
     const SidebarContent = () => (
         <div className="flex h-full flex-col bg-[#115E59] text-white">
             <div className="flex h-20 items-center border-b border-teal-800 px-6">
-                <Link href="/" className="flex items-center gap-3 font-semibold">
+                <Link href="/admin" className="flex items-center gap-3 font-semibold">
                     <div className="relative w-8 h-8">
                         <Image
                             src="/left_side.png"
@@ -79,13 +80,26 @@ export default function AdminLayout({
                     ))}
                 </nav>
             </div>
-            <div className="mt-auto p-4 border-t border-teal-800">
+            <div className="mt-auto p-4 border-t border-teal-800 space-y-1">
+                <Link
+                    href="/admin/profile"
+                    onClick={() => setIsMobileOpen(false)}
+                    className={cn(
+                        "flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all hover:text-white hover:bg-white/10",
+                        pathname === "/admin/profile"
+                            ? "bg-white/20 text-white shadow-sm"
+                            : "text-teal-100"
+                    )}
+                >
+                    <Users className="h-4 w-4" />
+                    Profile
+                </Link>
                 <button
                     onClick={async () => {
                         await fetch("/api/auth/logout", { method: "POST" });
                         window.location.href = "/login";
                     }}
-                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-teal-100 transition-all hover:text-white hover:bg-white/10"
+                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-300 transition-all hover:text-red-100 hover:bg-red-900/20"
                 >
                     <LogOut className="h-4 w-4" />
                     Sign Out
@@ -113,6 +127,7 @@ export default function AdminLayout({
                                 </Button>
                             </SheetTrigger>
                             <SheetContent side="left" className="p-0 border-r-[#115E59] w-64 bg-[#115E59]">
+                                <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                                 <SidebarContent />
                             </SheetContent>
                         </Sheet>

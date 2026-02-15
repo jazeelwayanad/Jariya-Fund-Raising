@@ -30,7 +30,18 @@ export async function GET(request: Request) {
         const donations = await prisma.donation.findMany({
             where,
             include: {
-                batch: { select: { id: true, name: true } },
+                batch: {
+                    select: {
+                        id: true,
+                        name: true,
+                    }
+                },
+                collectedBy: {
+                    select: {
+                        name: true,
+                        username: true
+                    }
+                },
                 unit: { select: { id: true, name: true } },
                 place: { select: { id: true, name: true } },
             },

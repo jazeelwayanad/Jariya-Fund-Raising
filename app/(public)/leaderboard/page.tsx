@@ -52,7 +52,7 @@ export default function LeaderboardPage() {
     return (
         <div className="min-h-screen bg-white text-foreground pb-20 font-sans">
             {/* Header */}
-            <div className="bg-[#116C72] text-white pt-8 pb-16 px-6 relative mb-5 shadow-xl">
+            <div className="bg-[#115e59] text-white pt-8 pb-16 px-6 relative mb-5 shadow-xl">
                 <div className="flex items-center mb-8">
                     <Link href="/">
                         <Button variant="secondary" size="sm" className="rounded-full bg-white text-[#134E4A] hover:bg-white/90 font-bold px-6 h-9">
@@ -64,7 +64,7 @@ export default function LeaderboardPage() {
             </div>
 
             {/* Tabs & List */}
-            <div className="container px-4">
+            <div className="container px-4 mb-10">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex flex-col items-center">
                     <TabsList className="bg-transparent gap-2 flex-nowrap h-auto justify-start mb-6 w-full max-w-full overflow-x-auto overflow-y-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                         {["Batches", "Individuals", "Units", "Districts", "Municipalities", "Panchayats"].map((tab) => (

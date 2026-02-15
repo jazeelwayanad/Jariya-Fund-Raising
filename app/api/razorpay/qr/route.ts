@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { razorpay } from '@/lib/razorpay';
 import prisma from '@/lib/prisma';
 import { PaymentMethod } from '@prisma/client';
+import { jwtVerify } from 'jose';
+import { cookies } from 'next/headers';
 
 export async function POST(request: Request) {
     try {
@@ -19,6 +21,23 @@ export async function POST(request: Request) {
 
         if (!amount) {
             return NextResponse.json({ error: 'Amount is required' }, { status: 400 });
+        }
+
+        // Verify Authentication (Optional: Only if cookie exists)
+        let collectedById = null;
+        const cookieStore = await cookies();
+        const token = cookieStore.get("auth_token")?.value;
+
+        if (token) {
+            try {
+                const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+                const { payload } = await jwtVerify(token, secret);
+                if (payload.id) {
+                    collectedById = payload.id as string;
+                }
+            } catch (e) {
+                // Ignore invalid token
+            }
         }
 
         // Parse Place ID for hierarchy
@@ -51,6 +70,7 @@ export async function POST(request: Request) {
                 paymentMethod: 'RAZORPAY' as PaymentMethod, // We can distinguish if needed, but RAZORPAY is fine
                 transactionId: `PENDING_QR_${Date.now()}`, // Temporary ID
                 paymentStatus: 'PENDING',
+                collectedById: collectedById,
             },
         });
 

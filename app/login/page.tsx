@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { Loader2, ArrowRight } from "lucide-react";
 
 export default function LoginPage() {
-    const [email, setEmail] = useState("");
+    const [identifier, setIdentifier] = useState("");
     const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const router = useRouter();
@@ -23,7 +23,7 @@ export default function LoginPage() {
             const res = await fetch("/api/auth/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({ identifier, password }),
             });
 
             const data = await res.json();
@@ -34,7 +34,11 @@ export default function LoginPage() {
             }
 
             toast.success("Login successful");
-            router.push("/admin");
+            if (data.role === "COORDINATOR") {
+                router.push("/coordinator/dashboard");
+            } else {
+                router.push("/admin");
+            }
         } catch (error: any) {
             toast.error(error.message || "Something went wrong");
         } finally {
@@ -115,15 +119,15 @@ export default function LoginPage() {
                     <form className="mt-8 space-y-6" onSubmit={handleLogin}>
                         <div className="space-y-5">
                             <div className="space-y-2">
-                                <Label htmlFor="email" className="text-gray-700">Email address</Label>
+                                <Label htmlFor="identifier" className="text-gray-700">Email or Username</Label>
                                 <Input
-                                    id="email"
-                                    type="email"
-                                    autoComplete="email"
+                                    id="identifier"
+                                    type="text"
+                                    autoComplete="username"
                                     required
-                                    placeholder="admin@jariya.com"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="admin@jariya.com or username"
+                                    value={identifier}
+                                    onChange={(e) => setIdentifier(e.target.value)}
                                     className="h-11 border-gray-200 focus-visible:ring-[#115E59] focus-visible:ring-offset-0"
                                 />
                             </div>

@@ -50,7 +50,11 @@ interface Donation {
     paymentMethod: string
     paymentStatus: "PENDING" | "SUCCESS" | "FAILED"
     createdAt: string
-    batch?: { id: string; name: string }
+    batch?: {
+        id: string;
+        name: string;
+        coordinators?: { name: string; username: string | null }[]
+    }
     unit?: { id: string; name: string }
     place?: { id: string; name: string }
 }
@@ -259,7 +263,7 @@ export default function AdminDonationsPage() {
     }
 
     const handleExportCSV = () => {
-        const headers = ["ID", "Date", "Name", "Mobile", "Amount", "Method", "Transaction ID", "Status", "Batch", "Unit", "Place"]
+        const headers = ["ID", "Date", "Name", "Mobile", "Amount", "Method", "Transaction ID", "Status", "Batch", "Coordinator", "Unit", "Place"]
         const csvContent = [
             headers.join(","),
             ...filteredDonations.map(d => [
@@ -272,6 +276,7 @@ export default function AdminDonationsPage() {
                 d.transactionId || "",
                 d.paymentStatus,
                 d.batch?.name || "",
+                `"${d.collectedBy?.name || ""}"`,
                 d.unit?.name || "",
                 d.place?.name || ""
             ].join(","))
@@ -540,6 +545,7 @@ export default function AdminDonationsPage() {
                             <TableHead>Date</TableHead>
                             <TableHead>Donor</TableHead>
                             <TableHead>Batch / Unit</TableHead>
+                            <TableHead>Coordinator</TableHead>
                             <TableHead>Method</TableHead>
                             <TableHead>Amount</TableHead>
                             <TableHead>Status</TableHead>
@@ -582,6 +588,17 @@ export default function AdminDonationsPage() {
                                             ) : <span className="text-muted-foreground italic">No Batch</span>}
                                             {donation.unit && <span className="text-muted-foreground mt-0.5">{donation.unit.name}</span>}
                                         </div>
+                                    </TableCell>
+                                    <TableCell className="text-sm">
+                                        {donation.collectedBy ? (
+                                            <div className="flex flex-col">
+                                                <span className="text-xs font-medium text-slate-700">
+                                                    {donation.collectedBy.name}
+                                                </span>
+                                            </div>
+                                        ) : (
+                                            <span className="text-xs text-muted-foreground italic">-</span>
+                                        )}
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex flex-col">

@@ -6,7 +6,7 @@ import { SignJWT } from "jose";
 import { z } from "zod";
 
 const loginSchema = z.object({
-    email: z.string().email("Invalid email address"),
+    identifier: z.string().min(1, "Email or Username is required"),
     password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
@@ -23,10 +23,16 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const { email, password } = result.data;
+        const { identifier, password } = result.data;
 
-        const user = await prisma.user.findUnique({
-            where: { email },
+        // Find user by email or username
+        const user = await prisma.user.findFirst({
+            where: {
+                OR: [
+                    { email: identifier },
+                    { username: identifier }
+                ]
+            }
         });
 
         if (!user) {
@@ -45,7 +51,7 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        if (user.role !== "SUPERADMIN" && user.role !== "STAFF") {
+        if (user.role !== "SUPERADMIN" && user.role !== "STAFF" && user.role !== "COORDINATOR") {
             return NextResponse.json(
                 { error: "Unauthorized access" },
                 { status: 403 }
@@ -62,7 +68,7 @@ export async function POST(req: NextRequest) {
             .setExpirationTime("24h")
             .sign(secret);
 
-        const response = NextResponse.json({ success: true });
+        const response = NextResponse.json({ success: true, role: user.role });
 
         // Set HTTP-only cookie
         response.cookies.set("auth_token", token, {

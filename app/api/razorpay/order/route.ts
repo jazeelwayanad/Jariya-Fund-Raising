@@ -3,6 +3,8 @@ import { razorpay } from '@/lib/razorpay';
 import prisma from '@/lib/prisma';
 import { PaymentMethod } from '@prisma/client';
 import { z } from 'zod';
+import { jwtVerify } from 'jose';
+import { cookies } from 'next/headers';
 
 const orderSchema = z.object({
     amount: z.coerce.number().positive("Amount must be positive"),
@@ -32,6 +34,25 @@ export async function POST(request: Request) {
             placeId,
             hideName
         } = result.data;
+
+        // Verify Authentication (Optional: Only if cookie exists)
+        let collectedById = null;
+        const cookieStore = await cookies();
+        const token = cookieStore.get("auth_token")?.value;
+
+        if (token) {
+            try {
+                const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+                const { payload } = await jwtVerify(token, secret);
+                // If token is valid, we assume the user is the one collecting
+                if (payload.id) {
+                    collectedById = payload.id as string;
+                }
+            } catch (e) {
+                // Token invalid or expired, ignore (treat as anonymous/public donation)
+                // console.log("Token verification failed in order route", e);
+            }
+        }
 
         // Create Order in Razorpay
         const options = {
@@ -70,6 +91,7 @@ export async function POST(request: Request) {
                 paymentMethod: 'RAZORPAY' as PaymentMethod,
                 transactionId: order.id, // Store order_id initially
                 paymentStatus: 'PENDING',
+                collectedById: collectedById, // Link to coordinator if logged in
             },
         });
 

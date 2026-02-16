@@ -32,7 +32,7 @@ export async function GET(req: Request) {
             // For now, let's group by Name if mobile is null, or just group by Name + Mobile combination?
             // "Individuals" usually implies unique donors. Mobile is the best key.
             const agg = await prisma.donation.groupBy({
-                by: ['name', 'mobile', 'batchId'],
+                by: ['name', 'mobile', 'batchId', 'hideName'],
                 _sum: { amount: true },
                 where: { paymentStatus: "SUCCESS" },
                 orderBy: { _sum: { amount: 'desc' } },
@@ -47,7 +47,7 @@ export async function GET(req: Request) {
                 const b = batches.find(x => x.id === item.batchId)
                 return {
                     rank: index + 1,
-                    name: item.name || "Anonymous",
+                    name: (item.hideName ? "Well Wisher" : item.name) || "Anonymous",
                     batch: b?.name || "General",
                     amount: item._sum.amount
                 }

@@ -259,7 +259,7 @@ export default function DonatePage() {
             return
         }
         if (!isGeneral && !selectedBatch) {
-            toast.error("Please select a Batch")
+            toast.error("Please select a Batch or check General Payment")
             return
         }
 
@@ -620,7 +620,7 @@ export default function DonatePage() {
                     {/* Batch Payment Section */}
                     <div className="space-y-2" ref={batchDropdownRef}>
                         <div className="flex justify-between items-center">
-                            <Label className="text-xs text-gray-700 font-medium">Batch Payment</Label>
+                            <Label className="text-xs text-gray-700 font-medium">Batch Payment<span className="text-red-500">*</span></Label>
                             <div className="flex items-center gap-1.5">
                                 <Checkbox
                                     id="gen-payment"

@@ -46,7 +46,7 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
             receiptImage={settings.receiptImage}
             config={config}
             donation={{
-                name: donation.name || "Anonymous",
+                name: (donation.hideName ? "Well Wisher" : donation.name) || "Anonymous",
                 amount: donation.amount,
                 transactionId: donation.transactionId || donation.id,
                 mobile: donation.mobile,

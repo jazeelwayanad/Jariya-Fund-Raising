@@ -120,7 +120,9 @@ export default function TransactionsPage() {
                                         <span className="text-[#134E4A] font-bold w-24 shrink-0">Details</span>
                                         <span className="text-gray-400 mr-2">:</span>
                                         <div className="text-black font-medium">
-                                            {tx.details.join(", ")}
+                                            {tx.details.map((detail, i) => (
+                                                <div key={i}>{detail}</div>
+                                            ))}
                                         </div>
                                     </div>
                                     <div className="flex">

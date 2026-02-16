@@ -40,16 +40,16 @@ export async function GET(req: Request) {
 
         const formatted = transactions.map(tx => {
             const details = []
+            if (tx.batch) details.push(tx.batch.name)
+            if (!tx.batch && !tx.place) details.push("General Donation")
             if (tx.place) {
                 details.push(tx.place.name)
                 if (tx.place.district) details.push(tx.place.district.name)
             }
-            if (tx.batch) details.push(tx.batch.name)
-            if (!tx.batch && !tx.place) details.push("General Donation")
 
             return {
                 id: tx.id,
-                name: tx.name || "Anonymous",
+                name: (tx.hideName ? "Well Wisher" : tx.name) || "Anonymous",
                 amount: tx.amount,
                 date: tx.createdAt, // Frontend will format this
                 details: details,

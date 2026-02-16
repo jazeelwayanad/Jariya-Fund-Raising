@@ -7,13 +7,23 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Card } from "@/components/ui/card";
-import { Move, Type, Calendar, DollarSign, Save } from "lucide-react";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { Move, Type, Calendar, DollarSign, Save, AlignLeft, AlignCenter, AlignRight, Bold } from "lucide-react";
 
 interface Config {
     x: number;
     y: number;
     fontSize: number;
     color: string;
+    align?: "left" | "center" | "right";
+    fontWeight?: "normal" | "bold" | "600";
+    letterSpacing?: number;
 }
 
 interface ReceiptConfig {
@@ -156,10 +166,15 @@ export function ReceiptEditor({ imageUrl, config, onSave }: ReceiptEditorProps) 
                             const cfg = localConfig[field as keyof ReceiptConfig];
                             const isSelected = selectedField === field;
 
+                            // Transform logic based on alignment
+                            let transform = "translate(-50%, -50%)"; // Default Center
+                            if (cfg.align === "left") transform = "translate(0, -50%)";
+                            if (cfg.align === "right") transform = "translate(-100%, -50%)";
+
                             return (
                                 <div
                                     key={field}
-                                    className={`absolute flex items-center justify-center whitespace-nowrap transition-all duration-150 ease-out
+                                    className={`absolute flex items-center whitespace-nowrap transition-all duration-150 ease-out
                                         ${!previewMode
                                             ? "cursor-grab hover:bg-primary/5"
                                             : ""
@@ -174,17 +189,24 @@ export function ReceiptEditor({ imageUrl, config, onSave }: ReceiptEditorProps) 
                                     style={{
                                         left: `${cfg.x}%`,
                                         top: `${cfg.y}%`,
-                                        transform: "translate(-50%, -50%)",
+                                        transform: transform,
                                         fontSize: `${cfg.fontSize}px`,
                                         color: cfg.color,
+                                        fontWeight: cfg.fontWeight || "600",
+                                        letterSpacing: `${cfg.letterSpacing || 0}px`,
                                         pointerEvents: previewMode ? "none" : "auto",
-                                        fontWeight: 600,
                                         padding: previewMode ? 0 : '4px 8px',
                                         borderRadius: '4px',
+                                        textAlign: cfg.align || "center",
                                     }}
                                     onMouseDown={(e) => handleMouseDown(e, field)}
                                 >
                                     {previewMode ? getPreviewText(field) : field.toUpperCase()}
+
+                                    {/* Alignment Indicator (Optional visual aid) */}
+                                    {!previewMode && isSelected && (
+                                        <div className={`absolute top-0 bottom-0 w-px bg-primary/50 ${cfg.align === 'left' ? '-left-4' : cfg.align === 'right' ? '-right-4' : 'left-1/2 -translate-x-1/2 h-[200%] -top-1/2'}`} style={{ opacity: 0.2 }}></div>
+                                    )}
 
                                     {/* Clean Resize Handles (Figma Style) */}
                                     {!previewMode && isSelected && (
@@ -203,13 +225,18 @@ export function ReceiptEditor({ imageUrl, config, onSave }: ReceiptEditorProps) 
 
                 <div className="h-10 border-t bg-white/80 backdrop-blur flex items-center justify-between px-4 text-[10px] text-muted-foreground uppercase tracking-wider font-medium">
                     <span>{imageUrl.split('/').pop()}</span>
-                    <span>{Math.round(localConfig.name.x * 10) / 10}%, {Math.round(localConfig.name.y * 10) / 10}%</span>
+                    <span>
+                        {selectedField
+                            ? `${localConfig[selectedField as keyof ReceiptConfig].align || 'CENTER'} • ${Math.round(localConfig[selectedField as keyof ReceiptConfig].x)}%, ${Math.round(localConfig[selectedField as keyof ReceiptConfig].y)}%`
+                            : "Select a layer"
+                        }
+                    </span>
                 </div>
             </div>
 
             {/* Inspector Panel - Right/Bottom */}
-            <div className="w-full md:w-80 flex flex-col gap-4">
-                <Card className="flex-1 flex flex-col border-none shadow-none md:border md:shadow-sm">
+            <div className="w-full md:w-80 flex flex-col gap-4 h-full">
+                <Card className="flex-1 flex flex-col border-none shadow-none md:border md:shadow-sm min-h-0">
                     <div className="p-4 border-b bg-gray-50/30">
                         <h3 className="font-semibold text-sm flex items-center gap-2">
                             Config Inspector
@@ -286,8 +313,50 @@ export function ReceiptEditor({ imageUrl, config, onSave }: ReceiptEditorProps) 
                                         </div>
                                     </div>
 
-                                    {/* Appearance Inputs */}
-                                    <div className="space-y-4 pt-2">
+                                    {/* Typography Settings */}
+                                    <div className="space-y-4">
+                                        <Label className="text-xs text-muted-foreground uppercase tracking-wider font-bold">Typography</Label>
+
+                                        {/* Alignment */}
+                                        <div className="space-y-2">
+                                            <Label className="text-xs">Alignment</Label>
+                                            <div className="flex p-1 bg-gray-100/50 rounded-lg border">
+                                                {['left', 'center', 'right'].map((align) => {
+                                                    const isActive = (localConfig[selectedField as keyof ReceiptConfig].align || 'center') === align;
+                                                    return (
+                                                        <button
+                                                            key={align}
+                                                            onClick={() => updateConfig(selectedField, { align: align as any })}
+                                                            className={`flex-1 flex justify-center py-1.5 rounded-md text-xs transition-all ${isActive ? 'bg-white shadow-sm text-primary font-medium' : 'text-gray-500 hover:text-gray-800'}`}
+                                                        >
+                                                            {align === 'left' && <AlignLeft className="w-4 h-4" />}
+                                                            {align === 'center' && <AlignCenter className="w-4 h-4" />}
+                                                            {align === 'right' && <AlignRight className="w-4 h-4" />}
+                                                        </button>
+                                                    )
+                                                })}
+                                            </div>
+                                        </div>
+
+                                        {/* Font Weight */}
+                                        <div className="space-y-2">
+                                            <Label className="text-xs">Weight</Label>
+                                            <Select
+                                                value={localConfig[selectedField as keyof ReceiptConfig].fontWeight || "600"}
+                                                onValueChange={(val) => updateConfig(selectedField, { fontWeight: val as any })}
+                                            >
+                                                <SelectTrigger className="h-8 text-xs">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="normal">Normal (400)</SelectItem>
+                                                    <SelectItem value="600">Semi Bold (600)</SelectItem>
+                                                    <SelectItem value="bold">Bold (700)</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        {/* Font Size */}
                                         <div className="space-y-3">
                                             <div className="flex justify-between items-center">
                                                 <Label className="text-xs">Font Size</Label>
@@ -303,9 +372,25 @@ export function ReceiptEditor({ imageUrl, config, onSave }: ReceiptEditorProps) 
                                             />
                                         </div>
 
+                                        {/* Letter Spacing */}
+                                        <div className="space-y-3">
+                                            <div className="flex justify-between items-center">
+                                                <Label className="text-xs">Letter Spacing</Label>
+                                                <span className="text-xs font-mono text-muted-foreground bg-gray-100 px-1.5 py-0.5 rounded">{localConfig[selectedField as keyof ReceiptConfig].letterSpacing || 0}px</span>
+                                            </div>
+                                            <Slider
+                                                value={[localConfig[selectedField as keyof ReceiptConfig].letterSpacing || 0]}
+                                                min={-2}
+                                                max={10}
+                                                step={0.5}
+                                                onValueChange={(vals) => updateConfig(selectedField, { letterSpacing: vals[0] })}
+                                                className="py-1"
+                                            />
+                                        </div>
+
                                         <div className="space-y-2">
                                             <Label className="text-xs">Color</Label>
-                                            <div className="flex gap-2 mb-2">
+                                            <div className="flex gap-1.5 flex-wrap mb-2">
                                                 {PRESET_COLORS.map(color => (
                                                     <button
                                                         key={color}
@@ -339,7 +424,7 @@ export function ReceiptEditor({ imageUrl, config, onSave }: ReceiptEditorProps) 
                     </div>
 
                     <div className="p-4 border-t bg-gray-50/50">
-                        <Button onClick={() => onSave(localConfig)} className="w-full gap-2 shadow-sm font-semibold h-10">
+                        <Button onClick={() => onSave(localConfig)} className="w-full gap-2 shadow-sm font-semibold h-10 bg-[#115E59] hover:bg-[#0f4e4a] text-white">
                             <Save className="h-4 w-4" /> Save Configuration
                         </Button>
                     </div>

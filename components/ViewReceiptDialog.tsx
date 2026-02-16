@@ -94,51 +94,38 @@ export function ViewReceiptDialog({ open, onOpenChange, donation, settings }: Vi
                             />
 
                             {/* Overlays */}
-                            {/* Name */}
-                            <div
-                                className="absolute font-bold transform -translate-x-1/2 -translate-y-1/2 whitespace-nowrap"
-                                style={{
-                                    left: `${config.name.x}%`,
-                                    top: `${config.name.y}%`,
-                                    fontSize: `${config.name.fontSize}px`, // Simple px mapping, might need scaling logic if image width varies significantly from config base
-                                    // In ReceiptContent.tsx, they used clamp. Here we might need to be careful. 
-                                    // However, since we are doing toPng on this container, relative positioning % works content-wise.
-                                    // Font size is the tricky part. The editor uses px relative to the image?
-                                    // Re-checking ReceiptContent: fontSize: "clamp(1rem, 2vw, 2rem)"
-                                    // The admin editor saves specific fontSize number (e.g. 20).
-                                    // Admin Settings Page preview uses: fontSize: `${config...fontSize}px`.
-                                    // Use the same logic as Admin Settings Page for consistency.
-                                    color: config.name.color,
-                                }}
-                            >
-                                {donation.name || "Anonymous"}
-                            </div>
+                            {["name", "amount", "date"].map((field) => {
+                                const cfg = config[field] || {};
+                                const value = field === "name"
+                                    ? (donation.name || "Anonymous")
+                                    : field === "amount"
+                                        ? `₹${donation.amount}`
+                                        : formattedDate;
 
-                            {/* Amount */}
-                            <div
-                                className="absolute font-bold transform -translate-x-1/2 -translate-y-1/2 whitespace-nowrap"
-                                style={{
-                                    left: `${config.amount.x}%`,
-                                    top: `${config.amount.y}%`,
-                                    fontSize: `${config.amount.fontSize}px`,
-                                    color: config.amount.color,
-                                }}
-                            >
-                                ₹{donation.amount}
-                            </div>
+                                // Transform logic based on alignment
+                                let transform = "translate(-50%, -50%)"; // Default Center
+                                if (cfg.align === "left") transform = "translate(0, -50%)";
+                                if (cfg.align === "right") transform = "translate(-100%, -50%)";
 
-                            {/* Date */}
-                            <div
-                                className="absolute font-bold transform -translate-x-1/2 -translate-y-1/2 whitespace-nowrap"
-                                style={{
-                                    left: `${config.date.x}%`,
-                                    top: `${config.date.y}%`,
-                                    fontSize: `${config.date.fontSize}px`,
-                                    color: config.date.color,
-                                }}
-                            >
-                                {formattedDate}
-                            </div>
+                                return (
+                                    <div
+                                        key={field}
+                                        className="absolute whitespace-nowrap"
+                                        style={{
+                                            left: `${cfg.x}%`,
+                                            top: `${cfg.y}%`,
+                                            transform: transform,
+                                            fontSize: `${cfg.fontSize}px`,
+                                            color: cfg.color,
+                                            fontWeight: cfg.fontWeight || "bold",
+                                            letterSpacing: `${cfg.letterSpacing || 0}px`,
+                                            textAlign: cfg.align || "center",
+                                        }}
+                                    >
+                                        {value}
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
 

@@ -45,9 +45,9 @@ export default function AdminSettingsPage() {
         razorpayKeySecret: "",
         receiptImage: "",
         receiptConfig: {
-            name: { x: 50, y: 50, fontSize: 20, color: "#000000" },
-            amount: { x: 50, y: 100, fontSize: 20, color: "#000000" },
-            date: { x: 50, y: 150, fontSize: 20, color: "#000000" },
+            name: { x: 50, y: 50, fontSize: 20, color: "#000000", align: "center", fontWeight: "600", letterSpacing: 0 },
+            amount: { x: 50, y: 100, fontSize: 20, color: "#000000", align: "center", fontWeight: "600", letterSpacing: 0 },
+            date: { x: 50, y: 150, fontSize: 20, color: "#000000", align: "center", fontWeight: "600", letterSpacing: 0 },
         },
     });
 
@@ -68,9 +68,9 @@ export default function AdminSettingsPage() {
                         razorpayKeySecret: data.razorpayKeySecret || "",
                         receiptImage: data.receiptImage || "",
                         receiptConfig: data.receiptConfig || {
-                            name: { x: 50, y: 50, fontSize: 20, color: "#000000" },
-                            amount: { x: 50, y: 100, fontSize: 20, color: "#000000" },
-                            date: { x: 50, y: 150, fontSize: 20, color: "#000000" },
+                            name: { x: 50, y: 50, fontSize: 20, color: "#000000", align: "center", fontWeight: "600", letterSpacing: 0 },
+                            amount: { x: 50, y: 100, fontSize: 20, color: "#000000", align: "center", fontWeight: "600", letterSpacing: 0 },
+                            date: { x: 50, y: 150, fontSize: 20, color: "#000000", align: "center", fontWeight: "600", letterSpacing: 0 },
                         },
                     });
                 } else {
@@ -252,7 +252,7 @@ export default function AdminSettingsPage() {
                                             onSave={(newConfig) => {
                                                 setSettings((prev) => ({
                                                     ...prev,
-                                                    receiptConfig: newConfig,
+                                                    receiptConfig: newConfig as any,
                                                 }));
                                                 setIsEditorOpen(false);
                                                 toast.success("Configuration updated. Dont forget to save changes!");
@@ -268,26 +268,40 @@ export default function AdminSettingsPage() {
                                     alt="Preview"
                                     className="h-full w-full object-contain mx-auto w-[600px]"
                                 />
-                                {["name", "amount", "date"].map((field) => (
-                                    <div
-                                        key={field}
-                                        className="absolute border border-dashed border-blue-500 bg-white/50 px-2 py-1 text-sm font-bold text-black transform -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-                                        style={{
-                                            left: `${settings.receiptConfig[field as keyof typeof settings.receiptConfig].x}%`,
-                                            top: `${settings.receiptConfig[field as keyof typeof settings.receiptConfig].y}%`,
-                                            fontSize: `${settings.receiptConfig[field as keyof typeof settings.receiptConfig].fontSize}px`,
-                                            color: settings.receiptConfig[field as keyof typeof settings.receiptConfig].color,
-                                        }}
-                                    >
-                                        {field.toUpperCase()}
-                                    </div>
-                                ))}
+                                {["name", "amount", "date"].map((field) => {
+                                    const cfg = settings.receiptConfig[field as keyof typeof settings.receiptConfig];
+                                    // Helper for consistency
+                                    const anyCfg = cfg as any;
+
+                                    let transform = "translate(-50%, -50%)"; // Default Center
+                                    if (anyCfg.align === "left") transform = "translate(0, -50%)";
+                                    if (anyCfg.align === "right") transform = "translate(-100%, -50%)";
+
+                                    return (
+                                        <div
+                                            key={field}
+                                            className="absolute border border-dashed border-blue-500 bg-white/50 px-2 py-1 text-sm font-bold text-black pointer-events-none whitespace-nowrap"
+                                            style={{
+                                                left: `${anyCfg.x}%`,
+                                                top: `${anyCfg.y}%`,
+                                                transform: transform,
+                                                fontSize: `${anyCfg.fontSize}px`,
+                                                color: anyCfg.color,
+                                                fontWeight: anyCfg.fontWeight || "600",
+                                                letterSpacing: `${anyCfg.letterSpacing || 0}px`,
+                                                textAlign: anyCfg.align || "center",
+                                            }}
+                                        >
+                                            {field.toUpperCase()}
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
                     )}
                 </CardContent>
             </Card>
 
-        </div>
+        </div >
     );
 }

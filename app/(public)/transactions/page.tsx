@@ -142,7 +142,7 @@ export default function TransactionsPage() {
                                 {/* Right side - Amount & Receipt */}
                                 <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start w-full sm:w-auto gap-2 sm:ml-4 border-t sm:border-t-0 pt-3 sm:pt-0 mt-2 sm:mt-0 border-dashed border-gray-200">
                                     <span className="text-xl sm:text-2xl font-bold text-black">{formatCurrency(tx.amount)}</span>
-                                    <Link href={`/receipt/${tx.transactionId || tx.id}`} target="_blank">
+                                    <Link href={`/receipt/${tx.transactionId || tx.id}`}>
                                         <Button size="sm" className="rounded-full bg-[#115e59] hover:bg-[#0f504c] text-white text-xs px-5 h-7 font-medium shadow-sm">
                                             Receipt
                                         </Button>

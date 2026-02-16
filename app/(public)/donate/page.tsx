@@ -477,18 +477,18 @@ export default function DonatePage() {
     return (
         <div className="min-h-screen bg-[#FFF9ED] font-sans relative">
             {/* Header */}
-            <div className="container px-6 pt-10 pb-6 flex items-center justify-between">
+            <div className="container px-4 pt-6 pb-4 sm:px-6 sm:pt-10 sm:pb-6 flex items-center justify-between">
                 <Link href="/">
-                    <Button size="sm" className="rounded-full bg-[#8B4513] hover:bg-[#723a10] text-white px-5 h-9 text-xs font-semibold shadow-sm">
+                    <Button size="sm" className="rounded-full bg-[#8B4513] hover:bg-[#723a10] text-white px-4 h-8 text-[10px] sm:text-xs sm:px-5 sm:h-9 font-semibold shadow-sm">
                         <ArrowLeft className="w-3 h-3 mr-1" /> Back
                     </Button>
                 </Link>
-                <h1 className="text-2xl font-bold text-black tracking-tight" style={{ fontFamily: 'var(--font-heading)' }}>Contribute Now</h1>
+                <h1 className="text-xl sm:text-2xl font-bold text-black tracking-tight" style={{ fontFamily: 'var(--font-heading)' }}>Contribute Now</h1>
             </div>
 
             <div className="container px-4 mt-2 mb-10 max-w-lg mx-auto space-y-6">
                 {/* Main Content Card */}
-                <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100 space-y-5">
+                <div className="bg-white rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 shadow-sm border border-gray-100 space-y-5">
 
                     {/* Amount Section */}
                     <div className="space-y-2">
@@ -512,7 +512,7 @@ export default function DonatePage() {
                                 <button
                                     key={val}
                                     onClick={() => setAmount(val.replace(/,/g, ''))}
-                                    className="bg-[#FDE68A] hover:bg-[#ffe066] text-black/90 text-[11px] font-bold py-1.5 px-3.5 rounded-full transition-all"
+                                    className="bg-[#FDE68A] hover:bg-[#ffe066] text-black/90 text-[10px] sm:text-[11px] font-bold py-1.5 px-3 sm:px-3.5 rounded-full transition-all"
                                 >
                                     ₹{val}
                                 </button>

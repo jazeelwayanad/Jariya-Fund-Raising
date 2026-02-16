@@ -84,8 +84,8 @@ export default function CoordinatorTransactionsPage() {
             <div className="flex flex-col gap-3 sticky top-16 bg-[#FFF9ED] z-10 py-2">
                 <div className="flex justify-between items-end">
                     <div>
-                        <h1 className="text-2xl font-bold tracking-tight text-[#115E59]">Transactions</h1>
-                        <p className="text-sm text-gray-500">History of batch donations.</p>
+                        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#115E59]">Transactions</h1>
+                        <p className="text-xs sm:text-sm text-gray-500">History of batch donations.</p>
                     </div>
                 </div>
 
@@ -140,7 +140,7 @@ export default function CoordinatorTransactionsPage() {
                                 {/* Left: Icon & Info */}
                                 <div className="flex items-center gap-3 overflow-hidden">
                                     <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${t.paymentStatus === 'SUCCESS' ? 'bg-teal-50 text-teal-600' :
-                                            t.paymentStatus === 'FAILED' ? 'bg-red-50 text-red-600' : 'bg-yellow-50 text-yellow-600'
+                                        t.paymentStatus === 'FAILED' ? 'bg-red-50 text-red-600' : 'bg-yellow-50 text-yellow-600'
                                         }`}>
                                         {t.paymentStatus === 'SUCCESS' ? <ArrowDownLeft className="w-5 h-5" /> : <Loader2 className="w-5 h-5" />}
                                     </div>

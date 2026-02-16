@@ -85,21 +85,21 @@ export default function CoordinatorDashboard() {
                         <Wallet className="w-5 h-5 text-white" />
                         <span className="text-lg font-medium tracking-wide">{stats.batch.name} Batch Collection</span>
                     </div>
-                    <div className="bg-[#1A6D66] rounded-2xl py-3 px-6 inline-block mb-8 w-full max-w-sm mx-auto shadow-inner">
-                        <h2 className="text-4xl font-bold tracking-wider">
+                    <div className="bg-[#1A6D66] rounded-2xl py-3 px-4 sm:px-6 inline-block mb-6 sm:mb-8 w-full max-w-sm mx-auto shadow-inner">
+                        <h2 className="text-3xl sm:text-4xl font-bold tracking-wider break-all">
                             {loading ? <Loader2 className="w-8 h-8 animate-spin mx-auto" /> : formatCurrency(stats.batch.totalCollected)}
                         </h2>
                     </div>
 
-                    <div className="flex justify-center gap-4 relative z-10 w-full max-w-sm mx-auto">
+                    <div className="flex justify-center gap-3 sm:gap-4 relative z-10 w-full max-w-sm mx-auto px-2 sm:px-0">
                         <Link href="/coordinator/transactions" className="flex-1">
-                            <Button className="w-full rounded-full bg-[#2D7A75] border-none text-white hover:bg-[#256661] hover:text-white px-2 py-5 shadow-sm text-sm font-medium">
+                            <Button className="w-full rounded-full bg-[#2D7A75] border-none text-white hover:bg-[#256661] hover:text-white px-2 py-4 sm:py-5 shadow-sm text-xs sm:text-sm font-medium h-auto whitespace-normal leading-tight">
                                 <span>Batch Transactions</span>
                             </Button>
                         </Link>
                         {/* Maybe add Leaderboard link or Members link later? */}
                         <Link href="/coordinator/leaderboard" className="flex-1">
-                            <Button className="w-full rounded-full bg-[#2D7A75] border-none text-white hover:bg-[#256661] hover:text-white px-2 py-5 shadow-sm text-sm font-medium">
+                            <Button className="w-full rounded-full bg-[#2D7A75] border-none text-white hover:bg-[#256661] hover:text-white px-2 py-4 sm:py-5 shadow-sm text-xs sm:text-sm font-medium h-auto whitespace-normal leading-tight">
                                 <span>Batch Leaderboard</span>
                             </Button>
                         </Link>
@@ -107,10 +107,10 @@ export default function CoordinatorDashboard() {
                 </div>
 
                 {/* Make Payment Button - Floating overlap style */}
-                <div className="mt-[-45px] flex justify-center relative z-20">
+                <div className="mt-[-35px] sm:mt-[-45px] flex justify-center relative z-20">
                     <Link href="/coordinator/payment">
-                        <Button className="rounded-full bg-[#859F3D] hover:bg-[#6f8533] text-white text-lg font-bold px-23 py-4 h-auto border-[7px] border-[#FFF9ED]">
-                         Deposit Funds
+                        <Button className="rounded-full bg-[#859F3D] hover:bg-[#6f8533] text-white text-base sm:text-lg font-bold px-16 sm:px-23 py-6 sm:py-4 h-auto border-[5px] sm:border-[7px] border-[#FFF9ED] shadow-lg">
+                            Deposit Funds
                         </Button>
                     </Link>
                 </div>

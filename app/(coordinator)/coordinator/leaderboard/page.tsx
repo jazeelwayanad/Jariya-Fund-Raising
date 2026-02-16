@@ -61,12 +61,12 @@ export default function CoordinatorLeaderboardPage() {
                     </Link>
                 </div>
                 <div className="flex items-center justify-between">
-                    <h1 className="text-3xl font-bold text-left tracking-wide">Batch<br />Leaderboard</h1>
-                    <Trophy className="w-12 h-12 text-[#FFE8A3] opacity-90 drop-shadow-md" />
+                    <h1 className="text-2xl sm:text-3xl font-bold text-left tracking-wide">Batch<br />Leaderboard</h1>
+                    <Trophy className="w-10 h-10 sm:w-12 sm:h-12 text-[#FFE8A3] opacity-90 drop-shadow-md" />
                 </div>
             </div>
 
-            <div className="px-4 space-y-3 max-w-[520px] mx-auto mt-8 relative z-10">
+            <div className="px-4 space-y-3 max-w-[520px] mx-auto mt-6 sm:mt-8 relative z-10">
                 {data.length === 0 ? (
                     <div className="text-center py-12 bg-white rounded-[2rem] shadow-sm border border-gray-100">
                         <p className="text-gray-400 font-medium">No contributions yet.</p>
@@ -78,24 +78,24 @@ export default function CoordinatorLeaderboardPage() {
 
                         return (
                             <div key={item.rank} className="bg-[#FFE8A3]/40 rounded-[1.2rem] p-3 pl-4 flex items-center justify-between shadow-sm border-none active:scale-[0.99] transition-transform">
-                                <div className="flex items-center gap-3">
-                                    <div className="relative">
-                                        <div className="w-12 h-12 rounded-full bg-[#115e59] flex items-center justify-center text-white font-bold text-lg shadow-sm">
+                                <div className="flex items-center gap-3 min-w-0 flex-1">
+                                    <div className="relative shrink-0">
+                                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#115e59] flex items-center justify-center text-white font-bold text-base sm:text-lg shadow-sm">
                                             {item.rank}
                                         </div>
                                         {starColor && (
                                             <div className="absolute -bottom-1 -right-1 rounded-full p-1 border-2 border-[#FFE8A3]/40 shadow-sm" style={{ backgroundColor: starColor }}>
-                                                <Star className="w-3 h-3 text-white fill-current" />
+                                                <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-white fill-current" />
                                             </div>
                                         )}
                                     </div>
-                                    <div className="min-w-0">
-                                        <h3 className="font-bold text-lg text-black truncate max-w-[180px]">{item.name}</h3>
-                                        <p className="text-xs text-[#115E59] font-bold tracking-wide uppercase">Rank #{item.rank}</p>
+                                    <div className="min-w-0 flex-1 pr-2">
+                                        <h3 className="font-bold text-base sm:text-lg text-black truncate">{item.name}</h3>
+                                        <p className="text-[10px] sm:text-xs text-[#115E59] font-bold tracking-wide uppercase">Rank #{item.rank}</p>
                                     </div>
                                 </div>
 
-                                <div className="bg-white/50 backdrop-blur-sm rounded-full px-4 py-1.5 border border-[#115E59]/20 text-sm font-bold text-[#115E59] shadow-sm">
+                                <div className="bg-white/50 backdrop-blur-sm rounded-full px-3 py-1 sm:px-4 sm:py-1.5 border border-[#115E59]/20 text-xs sm:text-sm font-bold text-[#115E59] shadow-sm shrink-0">
                                     {formatCurrency(item.amount)}
                                 </div>
                             </div>

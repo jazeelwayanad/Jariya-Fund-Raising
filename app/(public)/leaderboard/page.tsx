@@ -66,8 +66,8 @@ export default function LeaderboardPage() {
             {/* Tabs & List */}
             <div className="container px-4 mb-10">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex flex-col items-center">
-                    <TabsList className="bg-transparent gap-2 flex-nowrap h-auto justify-start mb-6 w-full max-w-full overflow-x-auto overflow-y-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                        {["Batches", "Individuals", "Units", "Districts", "Municipalities", "Panchayats"].map((tab) => (
+                    <TabsList className="bg-transparent gap-2 items-center justify-center flex-nowrap h-auto mb-6 w-full max-w-full overflow-x-auto overflow-y-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                        {["Batches", "Individuals", "Districts"].map((tab) => (
                             <TabsTrigger
                                 key={tab}
                                 value={tab.toLowerCase()}

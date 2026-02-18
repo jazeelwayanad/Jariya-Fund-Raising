@@ -36,7 +36,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
-import { MoreHorizontal, Check, X, Trash, Loader2, Download, Plus, FileText, Search } from "lucide-react"
+import { MoreHorizontal, Check, X, Trash, Loader2, Download, Plus, FileText, Search, Pencil } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import { ViewReceiptDialog } from "@/components/ViewReceiptDialog"
@@ -109,6 +109,20 @@ export default function AdminDonationsPage() {
     })
     const [submitting, setSubmitting] = useState(false)
 
+    // Edit State
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+    const [editingDonation, setEditingDonation] = useState({
+        id: "",
+        amount: "",
+        name: "",
+        mobile: "",
+        paymentMethod: "CASH",
+        transactionId: "",
+        batchId: "none",
+        unitId: "none",
+        placeId: "none",
+    })
+
     // Receipt View
     const [viewReceiptOpen, setViewReceiptOpen] = useState(false)
     const [selectedDonation, setSelectedDonation] = useState<Donation | null>(null)
@@ -118,6 +132,11 @@ export default function AdminDonationsPage() {
         fetchDonations()
         fetchMetadata()
     }, [])
+
+    const isEditable = (field: string) => {
+        if (!settings?.editableFields) return true // Default to editable if settings not loaded or legacy
+        return settings.editableFields[field] !== false
+    }
 
     const fetchDonations = async () => {
         setLoading(true)
@@ -261,6 +280,58 @@ export default function AdminDonationsPage() {
         } catch (error) {
             console.error("Error adding donation:", error)
             toast.error("Failed to add donation")
+        } finally {
+            setSubmitting(false)
+        }
+    }
+
+    const handleEditClick = (donation: Donation) => {
+        setEditingDonation({
+            id: donation.id,
+            amount: donation.amount.toString(),
+            name: donation.name || "",
+            mobile: donation.mobile || "",
+            paymentMethod: donation.paymentMethod,
+            transactionId: donation.transactionId || "",
+            batchId: donation.batch?.id || "none",
+            unitId: donation.unit?.id || "none",
+            placeId: donation.place?.id || "none",
+        })
+        setIsEditDialogOpen(true)
+    }
+
+    const handleUpdateDonation = async () => {
+        if (!editingDonation.amount) {
+            toast.error("Amount is required")
+            return
+        }
+
+        setSubmitting(true)
+        try {
+            const payload = {
+                ...editingDonation,
+                batchId: editingDonation.batchId === "none" ? null : editingDonation.batchId,
+                unitId: editingDonation.unitId === "none" ? null : editingDonation.unitId,
+                placeId: editingDonation.placeId === "none" ? null : editingDonation.placeId,
+            }
+
+            const res = await fetch(`/api/admin/donations/${editingDonation.id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            })
+
+            if (res.ok) {
+                toast.success("Donation updated successfully")
+                setIsEditDialogOpen(false)
+                fetchDonations()
+            } else {
+                const data = await res.json()
+                toast.error(data.error || "Failed to update donation")
+            }
+        } catch (error) {
+            console.error("Error updating donation:", error)
+            toast.error("Failed to update donation")
         } finally {
             setSubmitting(false)
         }
@@ -459,6 +530,156 @@ export default function AdminDonationsPage() {
                         </DialogContent>
                     </Dialog>
                 </div>
+
+                {/* Edit Dialog */}
+                <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                    <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                            <DialogTitle>Edit Donation</DialogTitle>
+                            <DialogDescription>
+                                Update donation details.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="edit-amount">Amount (₹) *</Label>
+                                    <Input
+                                        id="edit-amount"
+                                        type="number"
+                                        placeholder="0.00"
+                                        value={editingDonation.amount}
+                                        onChange={(e) => setEditingDonation({ ...editingDonation, amount: e.target.value })}
+                                        disabled={!isEditable("amount")}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="edit-method">Payment Method</Label>
+                                    <Select
+                                        value={editingDonation.paymentMethod}
+                                        onValueChange={(val) => setEditingDonation({ ...editingDonation, paymentMethod: val })}
+                                        disabled={!isEditable("paymentMethod")}
+                                    >
+                                        <SelectTrigger id="edit-method">
+                                            <SelectValue placeholder="Select method" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="CASH">Cash</SelectItem>
+                                            <SelectItem value="UPI">UPI</SelectItem>
+                                            <SelectItem value="BANK_TRANSFER">Bank Transfer</SelectItem>
+                                            <SelectItem value="QR">QR Code</SelectItem>
+                                            <SelectItem value="RAZORPAY">Razorpay</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="edit-name">Donor Name</Label>
+                                <Input
+                                    id="edit-name"
+                                    placeholder="Name"
+                                    value={editingDonation.name}
+                                    onChange={(e) => setEditingDonation({ ...editingDonation, name: e.target.value })}
+                                    disabled={!isEditable("name")}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="edit-mobile">Mobile Number</Label>
+                                    <Input
+                                        id="edit-mobile"
+                                        placeholder="Mobile"
+                                        value={editingDonation.mobile}
+                                        onChange={(e) => setEditingDonation({ ...editingDonation, mobile: e.target.value })}
+                                        disabled={!isEditable("mobile")}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="edit-txnId">Transaction ID</Label>
+                                    <Input
+                                        id="edit-txnId"
+                                        placeholder="Optional"
+                                        value={editingDonation.transactionId}
+                                        onChange={(e) => setEditingDonation({ ...editingDonation, transactionId: e.target.value })}
+                                        disabled={!isEditable("transactionId")}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="edit-batch">Batch</Label>
+                                <Select
+                                    value={editingDonation.batchId}
+                                    onValueChange={(val) => setEditingDonation({ ...editingDonation, batchId: val })}
+                                    disabled={!isEditable("batchId")}
+                                >
+                                    <SelectTrigger id="edit-batch">
+                                        <SelectValue placeholder="Select Batch" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="none">None</SelectItem>
+                                        {batches.map((batch) => (
+                                            <SelectItem key={batch.id} value={batch.id}>
+                                                {batch.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="edit-unit">Unit</Label>
+                                    <Select
+                                        value={editingDonation.unitId}
+                                        onValueChange={(val) => setEditingDonation({ ...editingDonation, unitId: val })}
+                                        disabled={!isEditable("unitId")}
+                                    >
+                                        <SelectTrigger id="edit-unit">
+                                            <SelectValue placeholder="Select Unit" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="none">None</SelectItem>
+                                            {units.map((unit) => (
+                                                <SelectItem key={unit.id} value={unit.id}>
+                                                    {unit.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="edit-place">Place</Label>
+                                    <Select
+                                        value={editingDonation.placeId}
+                                        onValueChange={(val) => setEditingDonation({ ...editingDonation, placeId: val })}
+                                        disabled={!isEditable("placeId")}
+                                    >
+                                        <SelectTrigger id="edit-place">
+                                            <SelectValue placeholder="Select Place" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="none">None</SelectItem>
+                                            {places.map((place) => (
+                                                <SelectItem key={place.id} value={place.id}>
+                                                    {place.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
+                            <Button onClick={handleUpdateDonation} disabled={submitting} className="bg-[#115E59] hover:bg-[#0f504c] text-white">
+                                {submitting ? "Updating..." : "Update Donation"}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
 
             <div className="flex flex-wrap items-center gap-4 bg-gray-50/50 p-4 rounded-lg border">
@@ -574,23 +795,61 @@ export default function AdminDonationsPage() {
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex flex-col">
-                                            <span className="font-medium">{donation.name || "Anonymous"}</span>
-                                            {donation.mobile && <span className="text-xs text-muted-foreground">{donation.mobile}</span>}
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-medium">{donation.name || "Anonymous"}</span>
+                                                {isEditable("name") && (
+                                                    <Button variant="ghost" size="icon" className="h-4 w-4 text-muted-foreground hover:text-primary" onClick={() => handleEditClick(donation)}>
+                                                        <Pencil className="h-3 w-3" />
+                                                    </Button>
+                                                )}
+                                            </div>
+                                            {donation.mobile && <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                                <span>{donation.mobile}</span>
+                                                {isEditable("mobile") && (
+                                                    <Button variant="ghost" size="icon" className="h-3 w-3 text-muted-foreground hover:text-primary" onClick={() => handleEditClick(donation)}>
+                                                        <Pencil className="h-2.5 w-2.5" />
+                                                    </Button>
+                                                )}
+                                            </div>}
                                             {donation.place && <span className="text-xs text-muted-foreground flex items-center gap-1">
                                                 <span className="w-1 h-1 rounded-full bg-slate-400"></span>
                                                 {donation.place.name}
+                                                {isEditable("placeId") && (
+                                                    <Button variant="ghost" size="icon" className="h-3 w-3 text-muted-foreground hover:text-primary" onClick={() => handleEditClick(donation)}>
+                                                        <Pencil className="h-2.5 w-2.5" />
+                                                    </Button>
+                                                )}
                                             </span>}
                                         </div>
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex flex-col text-xs">
                                             {donation.batch ? (
-                                                <span className="font-medium inline-flex items-center gap-1">
+                                                <div className="flex items-center gap-1">
                                                     <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                                                    {donation.batch.name}
-                                                </span>
-                                            ) : <span className="text-muted-foreground italic">No Batch</span>}
-                                            {donation.unit && <span className="text-muted-foreground mt-0.5">{donation.unit.name}</span>}
+                                                    <span className="font-medium">{donation.batch.name}</span>
+                                                    {isEditable("batchId") && (
+                                                        <Button variant="ghost" size="icon" className="h-3 w-3 text-muted-foreground hover:text-primary" onClick={() => handleEditClick(donation)}>
+                                                            <Pencil className="h-2.5 w-2.5" />
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                            ) : <div className="flex items-center gap-1">
+                                                <span className="text-muted-foreground italic">No Batch</span>
+                                                {isEditable("batchId") && (
+                                                    <Button variant="ghost" size="icon" className="h-3 w-3 text-muted-foreground hover:text-primary" onClick={() => handleEditClick(donation)}>
+                                                        <Pencil className="h-2.5 w-2.5" />
+                                                    </Button>
+                                                )}
+                                            </div>}
+                                            {donation.unit && <div className="flex items-center gap-1 mt-0.5">
+                                                <span className="text-muted-foreground">{donation.unit.name}</span>
+                                                {isEditable("unitId") && (
+                                                    <Button variant="ghost" size="icon" className="h-3 w-3 text-muted-foreground hover:text-primary" onClick={() => handleEditClick(donation)}>
+                                                        <Pencil className="h-2.5 w-2.5" />
+                                                    </Button>
+                                                )}
+                                            </div>}
                                         </div>
                                     </TableCell>
                                     <TableCell className="text-sm">
@@ -606,11 +865,34 @@ export default function AdminDonationsPage() {
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex flex-col">
-                                            <span className="text-sm">{donation.paymentMethod}</span>
-                                            {donation.transactionId && <span className="text-[10px] text-muted-foreground font-mono">{donation.transactionId}</span>}
+                                            <div className="flex items-center gap-1">
+                                                <span className="text-sm">{donation.paymentMethod}</span>
+                                                {isEditable("paymentMethod") && (
+                                                    <Button variant="ghost" size="icon" className="h-3 w-3 text-muted-foreground hover:text-primary" onClick={() => handleEditClick(donation)}>
+                                                        <Pencil className="h-2.5 w-2.5" />
+                                                    </Button>
+                                                )}
+                                            </div>
+                                            {donation.transactionId && <div className="flex items-center gap-1">
+                                                <span className="text-[10px] text-muted-foreground font-mono">{donation.transactionId}</span>
+                                                {isEditable("transactionId") && (
+                                                    <Button variant="ghost" size="icon" className="h-3 w-3 text-muted-foreground hover:text-primary" onClick={() => handleEditClick(donation)}>
+                                                        <Pencil className="h-2.5 w-2.5" />
+                                                    </Button>
+                                                )}
+                                            </div>}
                                         </div>
                                     </TableCell>
-                                    <TableCell className="font-bold text-base">₹{donation.amount.toLocaleString()}</TableCell>
+                                    <TableCell className="font-bold text-base">
+                                        <div className="flex items-center gap-1">
+                                            <span>₹{donation.amount.toLocaleString()}</span>
+                                            {isEditable("amount") && (
+                                                <Button variant="ghost" size="icon" className="h-3 w-3 text-muted-foreground hover:text-primary" onClick={() => handleEditClick(donation)}>
+                                                    <Pencil className="h-2.5 w-2.5" />
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </TableCell>
                                     <TableCell>
                                         <Badge
                                             variant={
@@ -652,6 +934,12 @@ export default function AdminDonationsPage() {
                                                     <FileText className="mr-2 h-4 w-4" />
                                                     View Receipt
                                                 </DropdownMenuItem>
+
+                                                <DropdownMenuItem onClick={() => handleEditClick(donation)}>
+                                                    <Pencil className="mr-2 h-4 w-4" />
+                                                    Edit Details
+                                                </DropdownMenuItem>
+
 
                                                 <DropdownMenuSeparator />
 

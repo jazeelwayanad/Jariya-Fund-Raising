@@ -16,11 +16,12 @@ export async function POST(req: Request) {
     console.log("DEBUG: DATABASE_URL =", process.env.DATABASE_URL)
     try {
         const body = await req.json()
-        const { name, year, description, status } = body
+        const { name, year, description, status, slug } = body
 
         const newBatch = await prisma.batch.create({
             data: {
                 name,
+                slug,
                 year,
                 description,
                 status: status || "Active"

@@ -43,13 +43,14 @@ import {
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import { CheckCircle2, MoreHorizontal, Plus, Search, Pencil, Trash2, Archive, Loader2 } from "lucide-react"
+import { CheckCircle2, MoreHorizontal, Plus, Search, Pencil, Trash2, Archive, Loader2, Link as LinkIcon, Copy } from "lucide-react"
 import { toast } from "sonner"
 
 // --- Types ---
 interface Batch {
     id: string
     name: string
+    slug?: string
     year: string
     status: "Active" | "Completed" | "Archived"
     totalAmount: number
@@ -69,6 +70,7 @@ export default function AdminBatchesPage() {
 
     // Form state
     const [formName, setFormName] = useState("")
+    const [formSlug, setFormSlug] = useState("")
     const [formYear, setFormYear] = useState(new Date().getFullYear().toString())
     const [formDesc, setFormDesc] = useState("")
     const [formStatus, setFormStatus] = useState<Batch["status"]>("Active")
@@ -101,6 +103,7 @@ export default function AdminBatchesPage() {
         try {
             const payload = {
                 name: formName,
+                slug: formSlug || undefined,
                 year: formYear,
                 description: formDesc,
                 status: formStatus
@@ -149,10 +152,19 @@ export default function AdminBatchesPage() {
         }
     }
 
+    const handleCopyLink = (batch: Batch) => {
+        // Use slug if available, otherwise name
+        const identifier = batch.slug ? encodeURIComponent(batch.slug) : encodeURIComponent(batch.name)
+        const url = `${window.location.origin}/donate?batch=${identifier}`
+        navigator.clipboard.writeText(url)
+        toast.success("Referral link copied to clipboard")
+    }
+
     const startEdit = (batch: Batch) => {
         setEditMode(true)
         setEditId(batch.id)
         setFormName(batch.name)
+        setFormSlug(batch.slug || "")
         setFormYear(batch.year)
         setFormDesc(batch.description || "")
         setFormStatus(batch.status)
@@ -163,6 +175,7 @@ export default function AdminBatchesPage() {
         setEditMode(false)
         setEditId(null)
         setFormName("")
+        setFormSlug("")
         setFormYear(new Date().getFullYear().toString())
         setFormDesc("")
         setFormStatus("Active")
@@ -202,9 +215,13 @@ export default function AdminBatchesPage() {
                                     <Input id="name" placeholder="e.g. Ramadan 2024" value={formName} onChange={(e) => setFormName(e.target.value)} />
                                 </div>
                                 <div className="grid gap-2">
-                                    <Label htmlFor="year">Year</Label>
-                                    <Input id="year" placeholder="2024" value={formYear} onChange={(e) => setFormYear(e.target.value)} />
+                                    <Label htmlFor="slug">Short Code / Slug</Label>
+                                    <Input id="slug" placeholder="e.g. ramadan24" value={formSlug} onChange={(e) => setFormSlug(e.target.value)} />
                                 </div>
+                            </div>
+                            <div className="grid gap-2">
+                                <Label htmlFor="year">Year</Label>
+                                <Input id="year" placeholder="2024" value={formYear} onChange={(e) => setFormYear(e.target.value)} />
                             </div>
                             <div className="grid gap-2">
                                 <Label htmlFor="description">Description</Label>
@@ -302,6 +319,9 @@ export default function AdminBatchesPage() {
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem onClick={() => handleCopyLink(batch)}>
+                                                        <LinkIcon className="mr-2 h-4 w-4" /> Copy Link
+                                                    </DropdownMenuItem>
                                                     <DropdownMenuItem onClick={() => startEdit(batch)}>
                                                         <Pencil className="mr-2 h-4 w-4" /> Edit
                                                     </DropdownMenuItem>
@@ -318,6 +338,6 @@ export default function AdminBatchesPage() {
                     </Table>
                 </div>
             </div>
-        </div>
+        </div >
     )
 }

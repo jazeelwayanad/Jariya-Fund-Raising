@@ -2,15 +2,28 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Loader2, Wallet, Star, History, Users, ArrowRight } from "lucide-react";
+import { Loader2, Wallet, Star, History, Users, ArrowRight, Copy, Pencil, Link as LinkIcon, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Footer } from "@/components/Footer";
 import { string } from "zod";
+import { toast } from "sonner";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface CoordinatorStats {
     batch: {
         id: string;
         name: string;
+        slug?: string;
         totalCollected: number;
     };
     user: {
@@ -24,6 +37,10 @@ export default function CoordinatorDashboard() {
     const [stats, setStats] = useState<CoordinatorStats | null>(null);
     const [loading, setLoading] = useState(true);
 
+    const [editSlugOpen, setEditSlugOpen] = useState(false);
+    const [slugForm, setSlugForm] = useState("");
+    const [updatingSlug, setUpdatingSlug] = useState(false);
+
     useEffect(() => {
         const fetchStats = async () => {
             try {
@@ -31,6 +48,7 @@ export default function CoordinatorDashboard() {
                 if (res.ok) {
                     const data = await res.json();
                     setStats(data);
+                    setSlugForm(data.batch.slug || "");
                 }
             } catch (error) {
                 console.error("Error loading stats", error);
@@ -41,6 +59,39 @@ export default function CoordinatorDashboard() {
 
         fetchStats();
     }, []);
+
+    const handleCopyLink = () => {
+        if (!stats) return;
+        const identifier = stats.batch.slug ? encodeURIComponent(stats.batch.slug) : encodeURIComponent(stats.batch.name);
+        const url = `${window.location.origin}/donate?batch=${identifier}`;
+        navigator.clipboard.writeText(url);
+        toast.success("Referral link copied to clipboard");
+    };
+
+    const handleUpdateSlug = async () => {
+        setUpdatingSlug(true);
+        try {
+            const res = await fetch("/api/coordinator/batch", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ slug: slugForm }),
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                setStats(prev => prev ? { ...prev, batch: { ...prev.batch, slug: data.batch.slug } } : null);
+                setEditSlugOpen(false);
+                toast.success("Referral link updated");
+            } else {
+                const err = await res.json();
+                toast.error(err.error || "Failed to update slug");
+            }
+        } catch (error) {
+            toast.error("An error occurred");
+        } finally {
+            setUpdatingSlug(false);
+        }
+    };
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat('en-IN', {
@@ -116,6 +167,69 @@ export default function CoordinatorDashboard() {
                 </div>
             </section>
 
+            {/* Referral Link Card */}
+            <section className="container px-4 py-4 space-y-4">
+                <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100/50">
+                    <h3 className="font-bold text-lg mb-4 text-black flex items-center gap-2">
+                        <LinkIcon className="w-5 h-5 text-[#115e59]" />
+                        Referral Link
+                    </h3>
+
+                    <div className="flex flex-col gap-3">
+                        <div className="flex justify-between items-center">
+                            <span className="text-gray-500 text-sm">Share this link to collect funds</span>
+                            <div className="flex gap-2">
+                                <Button variant="outline" size="sm" onClick={handleCopyLink} className="h-8 px-3 text-[#115e59] border-[#115e59]/20 hover:bg-teal-50">
+                                    <Copy className="w-3 h-3 mr-2" /> Copy
+                                </Button>
+                                <Dialog open={editSlugOpen} onOpenChange={setEditSlugOpen}>
+                                    <DialogTrigger asChild>
+                                        <Button variant="outline" size="sm" className="h-8 px-3 text-[#115e59] border-[#115e59]/20 hover:bg-teal-50">
+                                            <Pencil className="w-3 h-3 mr-2" /> Edit
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent>
+                                        <DialogHeader>
+                                            <DialogTitle>Edit Referral Link</DialogTitle>
+                                            <DialogDescription>
+                                                Customize your batch's unique referral link.
+                                            </DialogDescription>
+                                        </DialogHeader>
+                                        <div className="grid gap-4 py-4">
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="slug">Short Code / Slug</Label>
+                                                <Input
+                                                    id="slug"
+                                                    placeholder="e.g. batch-name"
+                                                    value={slugForm}
+                                                    onChange={(e) => setSlugForm(e.target.value)}
+                                                />
+                                                <p className="text-xs text-muted-foreground">
+                                                    Example: {window.location.origin}/donate?batch={slugForm || stats.batch.name}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <DialogFooter>
+                                            <Button variant="outline" onClick={() => setEditSlugOpen(false)}>Cancel</Button>
+                                            <Button onClick={handleUpdateSlug} disabled={updatingSlug} className="bg-[#115E59] text-white">
+                                                {updatingSlug && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                                Save Changes
+                                            </Button>
+                                        </DialogFooter>
+                                    </DialogContent>
+                                </Dialog>
+                            </div>
+                        </div>
+                        <div className="bg-gray-50 p-3 rounded-xl text-sm text-gray-600 font-mono break-all border border-gray-100 flex items-center justify-between group">
+                            <span>{window.location.origin}/donate?batch={stats.batch.slug || encodeURIComponent(stats.batch.name)}</span>
+                            <Button variant="ghost" size="icon" onClick={handleCopyLink} className="h-6 w-6 text-gray-400 hover:text-[#115e59] opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Copy className="w-3 h-3" />
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             {/* Batch Info / Quick Actions */}
             <section className="container px-4 py-4 space-y-4">
                 <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-gray-100/50">
@@ -129,6 +243,9 @@ export default function CoordinatorDashboard() {
                             <span className="text-gray-500 text-sm">Batch Name</span>
                             <span className="font-semibold text-gray-900">{stats.batch.name}</span>
                         </div>
+
+
+
                         <div className="flex justify-between items-center py-2 border-b border-gray-50 last:border-0">
                             <span className="text-gray-500 text-sm">Coordinator</span>
                             <span className="font-semibold text-gray-900">{stats.user.name}</span>

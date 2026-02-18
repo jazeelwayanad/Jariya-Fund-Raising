@@ -42,7 +42,9 @@ export async function PUT(req: Request) {
             razorpayKeySecret,
             upiId,
             receiptImage,
-            receiptConfig
+            receiptConfig,
+            displayStatuses,
+            editableFields
         } = body;
 
         // We assume a singleton pattern for settings, so we update the first record found
@@ -57,10 +59,11 @@ export async function PUT(req: Request) {
                 data: {
                     campaignTitle,
                     razorpayKeyId,
-                    razorpayKeySecret,
                     upiId,
                     receiptImage,
                     receiptConfig,
+                    displayStatuses,
+                    editableFields,
                 },
             });
         } else {
@@ -72,6 +75,8 @@ export async function PUT(req: Request) {
                     razorpayKeySecret,
                     receiptImage,
                     receiptConfig,
+                    displayStatuses,
+                    editableFields,
                 },
             });
         }

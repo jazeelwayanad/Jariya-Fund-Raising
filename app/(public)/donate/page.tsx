@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -107,6 +108,10 @@ export default function DonatePage() {
         return () => document.removeEventListener("mousedown", handleClickOutside)
     }, [])
 
+    // URL Search Params
+    const searchParams = useSearchParams()
+    const batchIdFromUrl = searchParams.get("batch")
+
     React.useEffect(() => {
         const fetchData = async () => {
             try {
@@ -117,6 +122,19 @@ export default function DonatePage() {
                 if (batchesRes.ok) {
                     const batchesData = await batchesRes.json()
                     setBatches(batchesData.filter((b: any) => b.status === "Active"))
+
+                    // Auto-select batch if in URL
+                    if (batchIdFromUrl) {
+                        const decodedBatchId = decodeURIComponent(batchIdFromUrl)
+                        const foundBatch = batchesData.find((b: any) =>
+                            (b.slug === decodedBatchId || b.id === decodedBatchId || b.name.toLowerCase() === decodedBatchId.toLowerCase()) &&
+                            b.status === "Active"
+                        )
+                        if (foundBatch) {
+                            setSelectedBatch(foundBatch.id)
+                            setIsGeneral(false)
+                        }
+                    }
                 }
                 if (placesRes.ok) {
                     const sectionsData: SectionItem[] = await placesRes.json()
@@ -131,7 +149,7 @@ export default function DonatePage() {
             }
         }
         fetchData()
-    }, [])
+    }, [batchIdFromUrl])
 
     // Get all places under the active section (flattened from districts)
     const allSectionPlaces = React.useMemo(() => {

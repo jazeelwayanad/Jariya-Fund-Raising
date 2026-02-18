@@ -22,6 +22,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ReceiptEditor } from "@/components/ReceiptEditor";
 import {
     Dialog,
@@ -49,6 +50,17 @@ export default function AdminSettingsPage() {
             amount: { x: 50, y: 100, fontSize: 20, color: "#000000", align: "center", fontWeight: "600", letterSpacing: 0 },
             date: { x: 50, y: 150, fontSize: 20, color: "#000000", align: "center", fontWeight: "600", letterSpacing: 0 },
         },
+        displayStatuses: ["SUCCESS"],
+        editableFields: {
+            amount: true,
+            name: true,
+            mobile: true,
+            paymentMethod: true,
+            transactionId: true,
+            batchId: true,
+            unitId: true,
+            placeId: true,
+        },
     });
 
     const [isEditorOpen, setIsEditorOpen] = useState(false);
@@ -71,6 +83,17 @@ export default function AdminSettingsPage() {
                             name: { x: 50, y: 50, fontSize: 20, color: "#000000", align: "center", fontWeight: "600", letterSpacing: 0 },
                             amount: { x: 50, y: 100, fontSize: 20, color: "#000000", align: "center", fontWeight: "600", letterSpacing: 0 },
                             date: { x: 50, y: 150, fontSize: 20, color: "#000000", align: "center", fontWeight: "600", letterSpacing: 0 },
+                        },
+                        displayStatuses: data.displayStatuses || ["SUCCESS"],
+                        editableFields: data.editableFields || {
+                            amount: true,
+                            name: true,
+                            mobile: true,
+                            paymentMethod: true,
+                            transactionId: true,
+                            batchId: true,
+                            unitId: true,
+                            placeId: true,
                         },
                     });
                 } else {
@@ -171,6 +194,74 @@ export default function AdminSettingsPage() {
                         </div>
 
                         {/* Removed Campaign Status and Banner Image URL as per user request */}
+
+                        <Separator className="my-4" />
+
+                        <div className="space-y-3">
+                            <Label className="text-base">Donation Visibility</Label>
+                            <p className="text-sm text-muted-foreground">Select which donations are visible in public and coordinator lists.</p>
+                            <div className="flex flex-col gap-2">
+                                {["SUCCESS", "PENDING", "FAILED"].map((status) => (
+                                    <div key={status} className="flex items-center space-x-2">
+                                        <Checkbox
+                                            id={`status-${status}`}
+                                            checked={settings.displayStatuses.includes(status)}
+                                            onCheckedChange={(checked) => {
+                                                setSettings(prev => {
+                                                    const current = prev.displayStatuses;
+                                                    if (checked) {
+                                                        return { ...prev, displayStatuses: [...current, status] };
+                                                    } else {
+                                                        return { ...prev, displayStatuses: current.filter(s => s !== status) };
+                                                    }
+                                                });
+                                            }}
+                                        />
+                                        <Label htmlFor={`status-${status}`} className="font-normal">{status} Donations</Label>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Donation Edit Permissions</CardTitle>
+                        <CardDescription>
+                            Control which fields can be edited in the donation management page. Unchecked fields will be disabled.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            {[
+                                { id: "amount", label: "Amount" },
+                                { id: "name", label: "Donor Name" },
+                                { id: "mobile", label: "Mobile" },
+                                { id: "paymentMethod", label: "Payment Method" },
+                                { id: "transactionId", label: "Transaction ID" },
+                                { id: "batchId", label: "Batch" },
+                                { id: "unitId", label: "Unit" },
+                                { id: "placeId", label: "Place" },
+                            ].map((field) => (
+                                <div key={field.id} className="flex items-center space-x-2">
+                                    <Checkbox
+                                        id={`edit-${field.id}`}
+                                        checked={settings.editableFields?.[field.id as keyof typeof settings.editableFields] ?? true}
+                                        onCheckedChange={(checked) => {
+                                            setSettings(prev => ({
+                                                ...prev,
+                                                editableFields: {
+                                                    ...prev.editableFields,
+                                                    [field.id]: !!checked
+                                                }
+                                            }));
+                                        }}
+                                    />
+                                    <Label htmlFor={`edit-${field.id}`} className="font-normal">{field.label}</Label>
+                                </div>
+                            ))}
+                        </div>
                     </CardContent>
                 </Card>
 

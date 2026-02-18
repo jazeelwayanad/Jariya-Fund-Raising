@@ -54,6 +54,7 @@ export async function GET(req: NextRequest) {
             batch: {
                 id: user.batch.id,
                 name: user.batch.name,
+                slug: user.batch.slug,
                 year: user.batch.year,
                 description: user.batch.description,
                 totalCollected: totalCollected,

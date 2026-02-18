@@ -5,11 +5,11 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     try {
         const { id } = await params
         const body = await req.json()
-        const { name, year, description, status } = body
+        const { name, year, description, status, slug } = body
 
         const updatedBatch = await prisma.batch.update({
             where: { id },
-            data: { name, year, description, status }
+            data: { name, slug, year, description, status }
         })
 
         return NextResponse.json(updatedBatch)

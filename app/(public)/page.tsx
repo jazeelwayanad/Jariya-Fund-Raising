@@ -127,8 +127,8 @@ export default function Home() {
       <section className="container px-4 py-6 bg-white">
         <h3 className="text-center text-xl font-bold mb-5 text-black">Leading Today</h3>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex flex-col items-center text-gray-800">
-          <TabsList className="bg-transparent gap-2 flex-nowrap h-auto justify-start mb-6 w-full max-w-full overflow-x-auto overflow-y-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden text-gray-800">
-            {["Batches", "Individuals", "Units", "Districts", "Municipalities", "Panchayats"].map((tab) => (
+          <TabsList className="bg-transparent items-center justify-center gap-2 flex-nowrap h-auto mb-6 w-full max-w-full overflow-x-auto overflow-y-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden text-gray-800">
+            {["Batches", "Individuals", "Districts"].map((tab) => (
               <TabsTrigger
                 key={tab}
                 value={tab.toLowerCase()}

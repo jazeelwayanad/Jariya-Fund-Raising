@@ -17,7 +17,16 @@ export async function GET(request: Request) {
 
         if (batchId) where.batchId = batchId;
         if (unitId) where.unitId = unitId;
-        if (status) where.paymentStatus = status as PaymentStatus;
+
+        // If specific status requested (e.g. from filter dropdown), use it
+        if (status) {
+            where.paymentStatus = status as PaymentStatus;
+        } else {
+            // Otherwise, apply global display settings
+            const settings = await prisma.settings.findFirst();
+            const displayStatuses = settings?.displayStatuses || ["SUCCESS"]; // Default safe fallback
+            where.paymentStatus = { in: displayStatuses };
+        }
 
         if (search) {
             where.OR = [

@@ -101,6 +101,7 @@ enum UnitStatus {
 model Batch {
   id          String      @id @default(cuid())
   name        String      @unique
+  slug        String?     @unique
   year        String
   description String?
   status      BatchStatus @default(Active)
@@ -176,6 +177,8 @@ model Settings {
   upiId             String?
   receiptImage      String?
   receiptConfig     Json?    // Stores coordinates { x, y, fontSize, color } for each field
+  displayStatuses   PaymentStatus[] @default([SUCCESS])
+  editableFields    Json?    // Stores boolean flags for each field { amount: true, name: false, ... }
   updatedAt         DateTime @updatedAt
 }
 

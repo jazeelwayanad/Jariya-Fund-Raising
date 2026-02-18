@@ -29,7 +29,6 @@ export default function CoordinatorTransactionsPage() {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
-    const [statusFilter, setStatusFilter] = useState("ALL"); // ALL, SUCCESS, PENDING, FAILED
 
     useEffect(() => {
         const fetchTransactions = async () => {
@@ -55,11 +54,10 @@ export default function CoordinatorTransactionsPage() {
     const filteredTransactions = transactions.filter(t => {
         const matchesSearch = (t.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
             (t.transactionId || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (t.mobile || "").includes(searchQuery);
+            (t.mobile || "").includes(searchQuery) ||
+            t.amount.toString().includes(searchQuery);
 
-        const matchesStatus = statusFilter === "ALL" || t.paymentStatus === statusFilter;
-
-        return matchesSearch && matchesStatus;
+        return matchesSearch;
     });
 
     const formatCurrency = (amount: number) => {
@@ -93,25 +91,12 @@ export default function CoordinatorTransactionsPage() {
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                         <Input
-                            placeholder="Search..."
+                            placeholder="Search by Name, Amount..."
                             className="pl-9 bg-white border-gray-200 h-9 text-sm rounded-xl focus-visible:ring-[#115E59]"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
-
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                        <SelectTrigger className="w-[110px] h-9 bg-white border-gray-200 rounded-xl text-xs font-medium">
-                            <Filter className="w-3.5 h-3.5 mr-2 text-gray-400" />
-                            <SelectValue placeholder="Status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="ALL">All Status</SelectItem>
-                            <SelectItem value="SUCCESS">Success</SelectItem>
-                            <SelectItem value="PENDING">Pending</SelectItem>
-                            <SelectItem value="FAILED">Failed</SelectItem>
-                        </SelectContent>
-                    </Select>
                 </div>
             </div>
 
@@ -120,13 +105,13 @@ export default function CoordinatorTransactionsPage() {
                 {filteredTransactions.length === 0 ? (
                     <div className="text-center py-12 bg-white rounded-2xl border border-dashed border-gray-200">
                         <p className="text-gray-400 text-sm">No transactions found.</p>
-                        {(searchQuery || statusFilter !== "ALL") && (
+                        {(searchQuery) && (
                             <Button
                                 variant="link"
-                                onClick={() => { setSearchQuery(""); setStatusFilter("ALL"); }}
+                                onClick={() => { setSearchQuery(""); }}
                                 className="text-[#115E59] text-xs mt-2"
                             >
-                                Clear Filters
+                                Clear Search
                             </Button>
                         )}
                     </div>
@@ -139,10 +124,8 @@ export default function CoordinatorTransactionsPage() {
                             <div className="flex items-center justify-between gap-3">
                                 {/* Left: Icon & Info */}
                                 <div className="flex items-center gap-3 overflow-hidden">
-                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${t.paymentStatus === 'SUCCESS' ? 'bg-teal-50 text-teal-600' :
-                                        t.paymentStatus === 'FAILED' ? 'bg-red-50 text-red-600' : 'bg-yellow-50 text-yellow-600'
-                                        }`}>
-                                        {t.paymentStatus === 'SUCCESS' ? <ArrowDownLeft className="w-5 h-5" /> : <Loader2 className="w-5 h-5" />}
+                                    <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-teal-50 text-teal-600">
+                                        <ArrowDownLeft className="w-5 h-5" />
                                     </div>
 
                                     <div className="min-w-0 flex-1">
@@ -159,24 +142,21 @@ export default function CoordinatorTransactionsPage() {
 
                                 {/* Right: Amount */}
                                 <div className="text-right shrink-0">
-                                    <div className={`font-bold text-sm ${t.paymentStatus === 'SUCCESS' ? 'text-teal-700' : 'text-gray-500'
-                                        }`}>
-                                        {t.paymentStatus === 'SUCCESS' ? '+' : ''}{formatCurrency(t.amount)}
+                                    <div className="font-bold text-sm text-teal-700">
+                                        +{formatCurrency(t.amount)}
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Bottom Actions Row (only for success) */}
-                            {t.paymentStatus === 'SUCCESS' && (
-                                <div className="pt-2 border-t border-gray-50 flex justify-end">
-                                    <Link href={`/receipt/${t.transactionId || t.id}`} className="inline-flex items-center">
-                                        <Button variant="ghost" size="sm" className="h-7 text-xs text-[#115E59] hover:bg-teal-50 px-2 rounded-lg">
-                                            <Download className="w-3.5 h-3.5 mr-1.5" />
-                                            Download Receipt
-                                        </Button>
-                                    </Link>
-                                </div>
-                            )}
+                            {/* Bottom Actions Row */}
+                            <div className="pt-2 border-t border-gray-50 flex justify-end">
+                                <Link href={`/receipt/${t.transactionId || t.id}`} className="inline-flex items-center">
+                                    <Button variant="ghost" size="sm" className="h-7 text-xs text-[#115E59] hover:bg-teal-50 px-2 rounded-lg">
+                                        <Download className="w-3.5 h-3.5 mr-1.5" />
+                                        Download Receipt
+                                    </Button>
+                                </Link>
+                            </div>
                         </div>
                     ))
                 )}

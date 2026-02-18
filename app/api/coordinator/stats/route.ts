@@ -58,7 +58,12 @@ export async function GET(req: NextRequest) {
                 year: user.batch.year,
                 description: user.batch.description,
                 totalCollected: totalCollected,
-                transactionCount: user.batch._count.donations // Note: This counts all donations, including pending. Maybe filter?
+                transactionCount: await prisma.donation.count({
+                    where: {
+                        batchId: user.batch.id,
+                        paymentStatus: "SUCCESS"
+                    }
+                })
                 // Let's count success donations independently
             },
             user: {

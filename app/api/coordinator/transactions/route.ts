@@ -25,6 +25,7 @@ export async function GET(req: NextRequest) {
         const transactions = await prisma.donation.findMany({
             where: {
                 batchId: user.batchId,
+                paymentStatus: "SUCCESS",
             },
             orderBy: {
                 createdAt: "desc",

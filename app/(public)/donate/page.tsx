@@ -642,7 +642,7 @@ export default function DonatePage() {
                     <div className="space-y-4" ref={batchDropdownRef}>
                         <div className="space-y-2">
                             <Label className="text-xs text-gray-700 font-medium">Payment Category</Label>
-                            <Tabs defaultValue="BATCH" value={donationCategory} onValueChange={(val) => setDonationCategory(val as any)} className="w-full">
+                            <Tabs defaultValue="GENERAL" value={donationCategory} onValueChange={(val) => setDonationCategory(val as any)} className="w-full">
                                 <TabsList className="grid w-full grid-cols-3">
                                     <TabsTrigger value="GENERAL">General</TabsTrigger>
                                     <TabsTrigger value="BATCH">Batch</TabsTrigger>

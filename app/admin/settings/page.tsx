@@ -60,6 +60,7 @@ export default function AdminSettingsPage() {
             batchId: true,
             unitId: true,
             placeId: true,
+            category: true,
         },
     });
 
@@ -94,6 +95,7 @@ export default function AdminSettingsPage() {
                             batchId: true,
                             unitId: true,
                             placeId: true,
+                            category: true,
                         },
                     });
                 } else {
@@ -243,6 +245,7 @@ export default function AdminSettingsPage() {
                                 { id: "batchId", label: "Batch" },
                                 { id: "unitId", label: "Unit" },
                                 { id: "placeId", label: "Place" },
+                                { id: "category", label: "Category" },
                             ].map((field) => (
                                 <div key={field.id} className="flex items-center space-x-2">
                                     <Checkbox

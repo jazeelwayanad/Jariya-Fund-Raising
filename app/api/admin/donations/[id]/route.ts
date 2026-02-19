@@ -63,6 +63,8 @@ export async function PUT(
         if (unitId !== undefined) updateData.unitId = unitId === "none" || unitId === null ? null : unitId;
         if (placeId !== undefined) updateData.placeId = placeId === "none" || placeId === null ? null : placeId;
         if (paymentMethod !== undefined) updateData.paymentMethod = paymentMethod;
+        if (body.hideName !== undefined) updateData.hideName = body.hideName;
+        if (body.category !== undefined) updateData.category = body.category;
 
         // Transaction to ensure data consistency
         const Result = await prisma.$transaction(async (tx) => {

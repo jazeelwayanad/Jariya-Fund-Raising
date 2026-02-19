@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -61,6 +62,8 @@ interface Donation {
         name: string
         username: string | null
     } | null
+    category: "BATCH" | "GENERAL" | "PARENT"
+    hideName: boolean
 }
 
 interface Batch {
@@ -91,6 +94,7 @@ export default function AdminDonationsPage() {
     const [batchFilter, setBatchFilter] = useState<string>("ALL")
     const [unitFilter, setUnitFilter] = useState<string>("ALL")
     const [placeFilter, setPlaceFilter] = useState<string>("ALL")
+    const [categoryFilter, setCategoryFilter] = useState<string>("ALL")
 
     // Manual Entry Data
     const [batches, setBatches] = useState<Batch[]>([])
@@ -106,6 +110,7 @@ export default function AdminDonationsPage() {
         batchId: "none",
         unitId: "none",
         placeId: "none",
+        hideName: false,
     })
     const [submitting, setSubmitting] = useState(false)
 
@@ -121,6 +126,8 @@ export default function AdminDonationsPage() {
         batchId: "none",
         unitId: "none",
         placeId: "none",
+        hideName: false,
+        category: "GENERAL" as "BATCH" | "GENERAL" | "PARENT"
     })
 
     // Receipt View
@@ -213,8 +220,9 @@ export default function AdminDonationsPage() {
             (d.place?.id ? units.find(u => u.id === unitFilter)?.placeIds.includes(d.place.id) : false)
 
         const matchesPlace = placeFilter === "ALL" || (d.place?.id === placeFilter)
+        const matchesCategory = categoryFilter === "ALL" || (d.category === categoryFilter)
 
-        return matchesSearch && matchesStatus && matchesMethod && matchesBatch && matchesUnit && matchesPlace
+        return matchesSearch && matchesStatus && matchesMethod && matchesBatch && matchesUnit && matchesPlace && matchesCategory
     })
 
 
@@ -271,6 +279,7 @@ export default function AdminDonationsPage() {
                     batchId: "none",
                     unitId: "none",
                     placeId: "none",
+                    hideName: false,
                 })
                 fetchDonations()
             } else {
@@ -296,6 +305,8 @@ export default function AdminDonationsPage() {
             batchId: donation.batch?.id || "none",
             unitId: donation.unit?.id || "none",
             placeId: donation.place?.id || "none",
+            hideName: donation.hideName || false,
+            category: donation.category || "GENERAL"
         })
         setIsEditDialogOpen(true)
     }
@@ -313,6 +324,8 @@ export default function AdminDonationsPage() {
                 batchId: editingDonation.batchId === "none" ? null : editingDonation.batchId,
                 unitId: editingDonation.unitId === "none" ? null : editingDonation.unitId,
                 placeId: editingDonation.placeId === "none" ? null : editingDonation.placeId,
+                hideName: editingDonation.hideName,
+                category: editingDonation.category
             }
 
             const res = await fetch(`/api/admin/donations/${editingDonation.id}`, {
@@ -338,12 +351,13 @@ export default function AdminDonationsPage() {
     }
 
     const handleExportCSV = () => {
-        const headers = ["ID", "Date", "Name", "Mobile", "Amount", "Method", "Transaction ID", "Status", "Batch", "Coordinator", "Unit", "Place"]
+        const headers = ["ID", "Date", "Category", "Name", "Mobile", "Amount", "Method", "Transaction ID", "Status", "Batch", "Coordinator", "Unit", "Place"]
         const csvContent = [
             headers.join(","),
             ...filteredDonations.map(d => [
                 d.id,
                 new Date(d.createdAt).toLocaleDateString(),
+                d.category,
                 `"${d.name || ""}"`,
                 d.mobile || "",
                 d.amount,
@@ -575,6 +589,24 @@ export default function AdminDonationsPage() {
                             </div>
 
                             <div className="space-y-2">
+                                <Label htmlFor="edit-category">Category</Label>
+                                <Select
+                                    value={editingDonation.category}
+                                    onValueChange={(val: any) => setEditingDonation({ ...editingDonation, category: val })}
+                                    disabled={!isEditable("category")}
+                                >
+                                    <SelectTrigger id="edit-category">
+                                        <SelectValue placeholder="Select Category" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="GENERAL">General</SelectItem>
+                                        <SelectItem value="BATCH">Batch</SelectItem>
+                                        <SelectItem value="PARENT">Parents</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div className="space-y-2">
                                 <Label htmlFor="edit-name">Donor Name</Label>
                                 <Input
                                     id="edit-name"
@@ -671,6 +703,17 @@ export default function AdminDonationsPage() {
                                     </Select>
                                 </div>
                             </div>
+
+                            <div className="flex items-center space-x-2 pt-2">
+                                <Checkbox
+                                    id="edit-hidename"
+                                    checked={editingDonation.hideName}
+                                    onCheckedChange={(checked) => setEditingDonation({ ...editingDonation, hideName: checked as boolean })}
+                                />
+                                <Label htmlFor="edit-hidename" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                    Hide Name (Show as Well Wisher)
+                                </Label>
+                            </div>
                         </div>
                         <DialogFooter>
                             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
@@ -679,8 +722,8 @@ export default function AdminDonationsPage() {
                             </Button>
                         </DialogFooter>
                     </DialogContent>
-                </Dialog>
-            </div>
+                </Dialog >
+            </div >
 
             <div className="flex flex-wrap items-center gap-4 bg-gray-50/50 p-4 rounded-lg border">
                 <div className="relative flex-1 min-w-[200px]">
@@ -714,6 +757,17 @@ export default function AdminDonationsPage() {
                         <SelectItem value="RAZORPAY">Razorpay</SelectItem>
                         <SelectItem value="CASH">Cash</SelectItem>
                         <SelectItem value="BANK_TRANSFER">Bank Transfer</SelectItem>
+                    </SelectContent>
+                </Select>
+                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                    <SelectTrigger className="w-[140px] bg-white">
+                        <SelectValue placeholder="Category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="ALL">All Categories</SelectItem>
+                        <SelectItem value="BATCH">Batch</SelectItem>
+                        <SelectItem value="GENERAL">General</SelectItem>
+                        <SelectItem value="PARENT">Parents</SelectItem>
                     </SelectContent>
                 </Select>
                 <Select value={batchFilter} onValueChange={setBatchFilter}>
@@ -768,6 +822,7 @@ export default function AdminDonationsPage() {
                         <TableRow>
                             <TableHead className="w-[100px]">ID</TableHead>
                             <TableHead>Date</TableHead>
+                            <TableHead>Category</TableHead>
                             <TableHead>Donor</TableHead>
                             <TableHead>Batch / Unit</TableHead>
                             <TableHead>Coordinator</TableHead>
@@ -786,12 +841,15 @@ export default function AdminDonationsPage() {
                             </TableRow>
                         ) : (
                             filteredDonations.map((donation) => (
-                                <TableRow key={donation.id}>
+                                <TableRow key={donation.id} className={donation.hideName ? "" : ""}>
                                     <TableCell className="font-medium text-xs font-mono text-muted-foreground">
-                                        {donation.id.substring(0, 8)}...
+                                        {donation.id.substring(0, 8)}... {donation.hideName && <Badge variant="outline" className="ml-1 text-[10px] border-amber-200 text-amber-700">Name Hidden</Badge>}
                                     </TableCell>
                                     <TableCell className="text-sm">
                                         {new Date(donation.createdAt).toLocaleDateString()}
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge variant="outline">{donation.category}</Badge>
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex flex-col">
@@ -969,6 +1027,6 @@ export default function AdminDonationsPage() {
                 donation={selectedDonation}
                 settings={settings}
             />
-        </div>
+        </div >
     )
 }

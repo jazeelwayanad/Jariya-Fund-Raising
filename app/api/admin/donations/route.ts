@@ -83,6 +83,10 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Amount and Payment Method are required' }, { status: 400 });
         }
 
+        if (!mobile) {
+            return NextResponse.json({ error: 'Mobile number is required' }, { status: 400 });
+        }
+
         const donation = await prisma.donation.create({
             data: {
                 amount: parseFloat(amount),

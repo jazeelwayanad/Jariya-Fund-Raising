@@ -9,7 +9,7 @@ import { cookies } from 'next/headers';
 const orderSchema = z.object({
     amount: z.coerce.number().positive("Amount must be positive"),
     name: z.string().optional(),
-    mobile: z.string().optional(),
+    mobile: z.string().min(1, "Mobile number is required"),
     batchId: z.string().optional().nullable(),
     unitId: z.string().optional().nullable(),
     placeId: z.string().optional().nullable(),

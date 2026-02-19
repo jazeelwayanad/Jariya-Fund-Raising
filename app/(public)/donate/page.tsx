@@ -273,6 +273,10 @@ export default function DonatePage() {
             toast.error("Please enter your name")
             return
         }
+        if (!phone) {
+            toast.error("Please enter your mobile number")
+            return
+        }
         if (!selectedPlace) {
             toast.error("Please select a Place/Municipality")
             return
@@ -565,84 +569,87 @@ export default function DonatePage() {
                     </div>
 
                     {/* Phone Section */}
-                    <div className="space-y-2 relative" ref={countryDropdownRef}>
-                        {/* Country Code Dropdown Trigger */}
-                        <div
-                            className="flex items-center absolute left-3 top-[10px] z-10 gap-2 cursor-pointer p-1 rounded hover:bg-gray-100 transition-colors"
-                            onClick={() => setOpenCountryDropdown(!openCountryDropdown)}
-                        >
-                            <img
-                                src={`https://flagcdn.com/w40/${selectedCountry.iso}.png`}
-                                alt={selectedCountry.name}
-                                className="w-5 h-3.5 object-cover rounded-[2px]"
-                            />
-                            <div className="h-4 w-[1px] bg-gray-300"></div>
-                            <span className="text-sm font-medium text-black">{selectedCountry.code}</span>
-                        </div>
-
-                        {/* Country Dropdown */}
-                        {openCountryDropdown && (
-                            <div className="absolute top-full left-0 w-[240px] mt-2 bg-white border border-gray-200 rounded-xl shadow-xl z-50 p-2 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
-                                <Input
-                                    autoFocus
-                                    placeholder="Search country or code..."
-                                    value={countrySearch}
-                                    onChange={(e) => setCountrySearch(e.target.value)}
-                                    className="h-9 text-xs mb-2 border-gray-200 text-gray-800"
-                                    onClick={(e) => e.stopPropagation()}
+                    <div className="space-y-2">
+                        <Label htmlFor="phone" className="text-gray-700 font-medium text-xs">Mobile Number<span className="text-red-500">*</span></Label>
+                        <div className="relative" ref={countryDropdownRef}>
+                            {/* Country Code Dropdown Trigger */}
+                            <div
+                                className="flex items-center absolute left-3 top-[10px] z-10 gap-2 cursor-pointer p-1 rounded hover:bg-gray-100 transition-colors"
+                                onClick={() => setOpenCountryDropdown(!openCountryDropdown)}
+                            >
+                                <img
+                                    src={`https://flagcdn.com/w40/${selectedCountry.iso}.png`}
+                                    alt={selectedCountry.name}
+                                    className="w-5 h-3.5 object-cover rounded-[2px]"
                                 />
-                                <div className="max-h-[200px] overflow-y-auto space-y-1 pr-1 custom-scrollbar">
-                                    {filteredCountries.length === 0 ? (
-                                        <div className="p-2 text-center text-xs text-gray-400">No countries found</div>
-                                    ) : (
-                                        filteredCountries.map(c => (
-                                            <div
-                                                key={c.code}
-                                                onClick={() => {
-                                                    setCountryCode(c.code)
-                                                    setOpenCountryDropdown(false)
-                                                    setCountrySearch("")
-                                                }}
-                                                className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors hover:bg-teal-50 flex items-center justify-between cursor-pointer ${countryCode === c.code ? "bg-teal-50 text-teal-800 font-medium" : "text-gray-700"
-                                                    }`}
-                                            >
-                                                <span className="flex items-center gap-2">
-                                                    <img
-                                                        src={`https://flagcdn.com/w40/${c.iso}.png`}
-                                                        alt={c.name}
-                                                        className="w-5 h-3.5 object-cover rounded-[2px]"
-                                                    />
-                                                    <span>{c.name}</span>
-                                                </span>
-                                                <span className="text-xs text-gray-400">{c.code}</span>
-                                            </div>
-                                        ))
-                                    )}
-                                </div>
+                                <div className="h-4 w-[1px] bg-gray-300"></div>
+                                <span className="text-sm font-medium text-black">{selectedCountry.code}</span>
                             </div>
-                        )}
 
-                        <Input
-                            id="phone"
-                            placeholder="Mobile Number"
-                            value={phone}
-                            onChange={(e) => {
-                                const val = e.target.value;
-                                if (/^\d*$/.test(val)) {
-                                    setPhone(val);
-                                }
-                            }}
-                            className="h-12 border-[#115E59] rounded-xl text-gray-800 bg-white pl-[90px] px-4 pl-20 shadow-none placeholder:text-gray-300 focus-visible:ring-2 focus-visible:ring-[#115E59]"
-                            type="text"
-                            inputMode="numeric"
-                        />
+                            {/* Country Dropdown */}
+                            {openCountryDropdown && (
+                                <div className="absolute top-full left-0 w-[240px] mt-2 bg-white border border-gray-200 rounded-xl shadow-xl z-50 p-2 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+                                    <Input
+                                        autoFocus
+                                        placeholder="Search country or code..."
+                                        value={countrySearch}
+                                        onChange={(e) => setCountrySearch(e.target.value)}
+                                        className="h-9 text-xs mb-2 border-gray-200 text-gray-800"
+                                        onClick={(e) => e.stopPropagation()}
+                                    />
+                                    <div className="max-h-[200px] overflow-y-auto space-y-1 pr-1 custom-scrollbar">
+                                        {filteredCountries.length === 0 ? (
+                                            <div className="p-2 text-center text-xs text-gray-400">No countries found</div>
+                                        ) : (
+                                            filteredCountries.map(c => (
+                                                <div
+                                                    key={c.code}
+                                                    onClick={() => {
+                                                        setCountryCode(c.code)
+                                                        setOpenCountryDropdown(false)
+                                                        setCountrySearch("")
+                                                    }}
+                                                    className={`w-full text-left px-3 py-2 text-sm rounded-lg transition-colors hover:bg-teal-50 flex items-center justify-between cursor-pointer ${countryCode === c.code ? "bg-teal-50 text-teal-800 font-medium" : "text-gray-700"
+                                                        }`}
+                                                >
+                                                    <span className="flex items-center gap-2">
+                                                        <img
+                                                            src={`https://flagcdn.com/w40/${c.iso}.png`}
+                                                            alt={c.name}
+                                                            className="w-5 h-3.5 object-cover rounded-[2px]"
+                                                        />
+                                                        <span>{c.name}</span>
+                                                    </span>
+                                                    <span className="text-xs text-gray-400">{c.code}</span>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            <Input
+                                id="phone"
+                                placeholder="Mobile Number"
+                                value={phone}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (/^\d*$/.test(val)) {
+                                        setPhone(val);
+                                    }
+                                }}
+                                className="h-12 border-[#115E59] rounded-xl text-gray-800 bg-white pl-[90px] px-4 pl-20 shadow-none placeholder:text-gray-300 focus-visible:ring-2 focus-visible:ring-[#115E59]"
+                                type="text"
+                                inputMode="numeric"
+                            />
+                        </div>
                     </div>
 
                     {/* Batch / Category Selection */}
                     <div className="space-y-4" ref={batchDropdownRef}>
                         <div className="space-y-2">
                             <Label className="text-xs text-gray-700 font-medium">Payment Category</Label>
-                            <Tabs defaultValue="GENERAL" value={donationCategory} onValueChange={(val) => setDonationCategory(val as any)} className="w-full">
+                            <Tabs defaultValue="BATCH" value={donationCategory} onValueChange={(val) => setDonationCategory(val as any)} className="w-full">
                                 <TabsList className="grid w-full grid-cols-3">
                                     <TabsTrigger value="GENERAL">General</TabsTrigger>
                                     <TabsTrigger value="BATCH">Batch</TabsTrigger>

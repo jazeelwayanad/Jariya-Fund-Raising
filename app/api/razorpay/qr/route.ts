@@ -23,6 +23,9 @@ export async function POST(request: Request) {
         if (!amount) {
             return NextResponse.json({ error: 'Amount is required' }, { status: 400 });
         }
+        if (!mobile) {
+            return NextResponse.json({ error: 'Mobile number is required' }, { status: 400 });
+        }
 
         // Verify Authentication (Optional: Only if cookie exists)
         let collectedById = null;

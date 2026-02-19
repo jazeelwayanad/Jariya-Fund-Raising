@@ -14,6 +14,7 @@ const orderSchema = z.object({
     unitId: z.string().optional().nullable(),
     placeId: z.string().optional().nullable(),
     hideName: z.boolean().optional(),
+    category: z.enum(['BATCH', 'GENERAL', 'PARENT']).optional(),
 });
 
 export async function POST(request: Request) {
@@ -32,7 +33,8 @@ export async function POST(request: Request) {
             batchId,
             unitId,
             placeId,
-            hideName
+            hideName,
+            category
         } = result.data;
 
         // Verify Authentication (Optional: Only if cookie exists)
@@ -91,6 +93,7 @@ export async function POST(request: Request) {
                 paymentMethod: 'RAZORPAY' as PaymentMethod,
                 transactionId: order.id, // Store order_id initially
                 paymentStatus: 'PENDING',
+                category: category || 'GENERAL',
                 collectedById: collectedById, // Link to coordinator if logged in
             },
         });

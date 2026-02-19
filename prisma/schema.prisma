@@ -145,6 +145,7 @@ model Donation {
   paymentMethod  PaymentMethod
   paymentStatus  PaymentStatus @default(PENDING)
   transactionId  String?       @unique
+  category       DonationCategory @default(GENERAL)
   
   collectedById  String?
   collectedBy    User?         @relation("CollectedBy", fields: [collectedById], references: [id])
@@ -164,6 +165,12 @@ enum PaymentStatus {
   PENDING
   SUCCESS
   FAILED
+}
+
+enum DonationCategory {
+  BATCH
+  GENERAL
+  PARENT
 }
 
 // --- Settings ---

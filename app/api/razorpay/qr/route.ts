@@ -16,7 +16,8 @@ export async function POST(request: Request) {
             batchId,
             unitId,
             placeId,
-            hideName
+            hideName,
+            category
         } = body;
 
         if (!amount) {
@@ -70,6 +71,7 @@ export async function POST(request: Request) {
                 paymentMethod: 'RAZORPAY' as PaymentMethod, // We can distinguish if needed, but RAZORPAY is fine
                 transactionId: `PENDING_QR_${Date.now()}`, // Temporary ID
                 paymentStatus: 'PENDING',
+                category: category || 'GENERAL',
                 collectedById: collectedById,
             },
         });

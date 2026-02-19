@@ -17,6 +17,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "sonner"
 import { PaymentWaiting } from "@/components/payment/PaymentWaiting"
 import { QRCodePayment } from "@/components/payment/QRCodePayment"
@@ -65,7 +66,7 @@ export default function DonatePage() {
     const [name, setName] = React.useState("")
     const [phone, setPhone] = React.useState("")
     const [hideName, setHideName] = React.useState(false)
-    const [isGeneral, setIsGeneral] = React.useState(false)
+    const [donationCategory, setDonationCategory] = React.useState<"BATCH" | "GENERAL" | "PARENT">("BATCH")
 
     // Data state
     const [batches, setBatches] = React.useState<Batch[]>([])
@@ -132,7 +133,7 @@ export default function DonatePage() {
                         )
                         if (foundBatch) {
                             setSelectedBatch(foundBatch.id)
-                            setIsGeneral(false)
+                            setDonationCategory("BATCH")
                         }
                     }
                 }
@@ -276,8 +277,8 @@ export default function DonatePage() {
             toast.error("Please select a Place/Municipality")
             return
         }
-        if (!isGeneral && !selectedBatch) {
-            toast.error("Please select a Batch or check General Payment")
+        if (donationCategory === "BATCH" && !selectedBatch) {
+            toast.error("Please select a Batch")
             return
         }
 
@@ -294,9 +295,10 @@ export default function DonatePage() {
                         name,
                         mobile: `${countryCode} ${phone}`,
                         hideName,
-                        batchId: isGeneral ? null : selectedBatch,
+                        batchId: donationCategory === "BATCH" ? selectedBatch : null,
                         unitId: null,
                         placeId: selectedPlace,
+                        category: donationCategory,
                     })
                 });
 
@@ -336,9 +338,10 @@ export default function DonatePage() {
                         name,
                         mobile: `${countryCode} ${phone}`,
                         hideName,
-                        batchId: isGeneral ? null : selectedBatch,
+                        batchId: donationCategory === "BATCH" ? selectedBatch : null,
                         unitId: null,
                         placeId: selectedPlace,
+                        category: donationCategory,
                     })
                 })
 
@@ -635,33 +638,31 @@ export default function DonatePage() {
                         />
                     </div>
 
-                    {/* Batch Payment Section */}
-                    <div className="space-y-2" ref={batchDropdownRef}>
-                        <div className="flex justify-between items-center">
-                            <Label className="text-xs text-gray-700 font-medium">Batch Payment<span className="text-red-500">*</span></Label>
-                            <div className="flex items-center gap-1.5">
-                                <Checkbox
-                                    id="gen-payment"
-                                    className="w-4 h-4 rounded-[3px] border-gray-700 data-[state=checked]:bg-[#115E59] data-[state=checked]:border-[#115E59]"
-                                    checked={isGeneral}
-                                    onCheckedChange={(c) => setIsGeneral(c as boolean)}
-                                />
-                                <Label htmlFor="gen-payment" className="text-[10px] text-gray-600 font-medium cursor-pointer">General Payment</Label>
-                            </div>
+                    {/* Batch / Category Selection */}
+                    <div className="space-y-4" ref={batchDropdownRef}>
+                        <div className="space-y-2">
+                            <Label className="text-xs text-gray-700 font-medium">Payment Category</Label>
+                            <Tabs defaultValue="BATCH" value={donationCategory} onValueChange={(val) => setDonationCategory(val as any)} className="w-full">
+                                <TabsList className="grid w-full grid-cols-3">
+                                    <TabsTrigger value="GENERAL">General</TabsTrigger>
+                                    <TabsTrigger value="BATCH">Batch</TabsTrigger>
+                                    <TabsTrigger value="PARENT">Parents</TabsTrigger>
+                                </TabsList>
+                            </Tabs>
                         </div>
 
                         <div className="relative">
                             <div
-                                onClick={() => !isGeneral && setOpenBatchDropdown(!openBatchDropdown)}
-                                className={`h-12 w-full border border-[#115E59] rounded-xl bg-white px-3 flex items-center justify-between cursor-pointer transition-colors ${isGeneral ? "opacity-50 cursor-not-allowed bg-gray-50" : "hover:border-[#115E59]"}`}
+                                onClick={() => donationCategory === "BATCH" && setOpenBatchDropdown(!openBatchDropdown)}
+                                className={`h-12 w-full border border-[#115E59] rounded-xl bg-white px-3 flex items-center justify-between cursor-pointer transition-colors ${donationCategory !== "BATCH" ? "opacity-50 cursor-not-allowed bg-gray-50" : "hover:border-[#115E59]"}`}
                             >
                                 <span className={`text-sm ${selectedBatchName ? "text-black" : "text-gray-400"}`}>
-                                    {selectedBatchName || "Select Batch"}
+                                    {donationCategory === "BATCH" ? (selectedBatchName || "Select Batch") : (donationCategory === "PARENT" ? "Parent Donation" : "General Donation")}
                                 </span>
-                                <ChevronDown className={`h-4 w-4 text-gray-500 transition-transform ${openBatchDropdown ? "rotate-180" : ""}`} />
+                                {donationCategory === "BATCH" && <ChevronDown className={`h-4 w-4 text-gray-500 transition-transform ${openBatchDropdown ? "rotate-180" : ""}`} />}
                             </div>
 
-                            {openBatchDropdown && !isGeneral && (
+                            {openBatchDropdown && donationCategory === "BATCH" && (
                                 <div className="absolute top-full left-0 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-xl z-50 p-2 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
                                     <div className="max-h-[220px] overflow-y-auto space-y-1 pr-1 custom-scrollbar">
                                         {batches.map(b => (

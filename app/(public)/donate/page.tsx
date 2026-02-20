@@ -709,7 +709,7 @@ export default function DonatePage() {
 
                     {/* Place / Area */}
                     <div className="space-y-2" ref={dropdownRef}>
-                        <Label className="text-gray-700 font-medium text-xs">Panchayath/Municipality<span className="text-red-500">*</span></Label>
+                        <Label className="text-gray-700 font-medium text-xs">Place<span className="text-red-500">*</span></Label>
 
                         <div className="relative">
                             <div
@@ -717,7 +717,7 @@ export default function DonatePage() {
                                 className="h-12 w-full border border-[#115E59] rounded-xl bg-white px-3 flex items-center justify-between cursor-pointer hover:border-[#115E59] transition-colors"
                             >
                                 <span className={`text-sm ${selectedPlaceName ? "text-black" : "text-gray-400"}`}>
-                                    {selectedPlaceName || "Select Panchayath/Municipality"}
+                                    {selectedPlaceName || "Select Place"}
                                 </span>
 
                                 <ChevronDown className={`h-4 w-4 text-gray-500 transition-transform ${openPlaceDropdown ? "rotate-180" : ""}`} />

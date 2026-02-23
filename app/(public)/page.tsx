@@ -48,7 +48,7 @@ export default function Home() {
     const fetchLeaderboard = async () => {
       setLeaderboardLoading(true);
       try {
-        const res = await fetch(`/api/stats/leaderboard?type=${activeTab}&limit=3`);
+        const res = await fetch(`/api/stats/leaderboard?type=${activeTab}&limit=3&period=today`);
         if (res.ok) {
           const data = await res.json();
           setLeaderboardData(data);
@@ -143,7 +143,7 @@ export default function Home() {
             {leaderboardLoading ? (
               <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-muted-foreground" /></div>
             ) : leaderboardData.length === 0 ? (
-              <div className="text-center text-muted-foreground py-4">No data available yet.</div>
+              <div className="text-center text-muted-foreground py-4">No Transactions Today</div>
             ) : (
               leaderboardData.map((item, i) => {
                 const rank = item.rank || i + 1;

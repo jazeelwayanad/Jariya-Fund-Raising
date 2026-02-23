@@ -87,6 +87,11 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Mobile number is required' }, { status: 400 });
         }
 
+        // Generate a unique transactionId if not provided, to avoid unique constraint violations
+        const finalTransactionId = transactionId && transactionId.trim() !== ''
+            ? transactionId.trim()
+            : `ADMIN-${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
+
         const donation = await prisma.donation.create({
             data: {
                 amount: parseFloat(amount),
@@ -96,10 +101,9 @@ export async function POST(request: Request) {
                 unitId,
                 placeId,
                 paymentMethod: paymentMethod as PaymentMethod,
-                transactionId,
+                transactionId: finalTransactionId,
                 hideName: hideName || false,
-                paymentStatus: 'SUCCESS', // default to success for manual entry, or PENDING if from public form (handled elsewhere usually)
-                // For admin manual entry, we usually assume it's verified or SUCCESS.
+                paymentStatus: 'SUCCESS',
             },
         });
 

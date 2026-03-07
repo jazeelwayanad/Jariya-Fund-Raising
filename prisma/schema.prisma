@@ -186,6 +186,7 @@ model Settings {
   receiptConfig     Json?    // Stores coordinates { x, y, fontSize, color } for each field
   displayStatuses   PaymentStatus[] @default([SUCCESS])
   editableFields    Json?    // Stores boolean flags for each field { amount: true, name: false, ... }
+  presetAmounts     Json?    // Stores preset donation amounts as array [500, 1000, 2000, 5000, 10000]
   updatedAt         DateTime @updatedAt
 }
 

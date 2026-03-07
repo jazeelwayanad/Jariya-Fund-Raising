@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { X, Plus } from "lucide-react";
 import {
     Card,
     CardContent,
@@ -62,9 +63,11 @@ export default function AdminSettingsPage() {
             placeId: true,
             category: true,
         },
+        presetAmounts: [500, 1000, 2000, 5000, 10000] as number[],
     });
 
     const [isEditorOpen, setIsEditorOpen] = useState(false);
+    const [newPresetAmount, setNewPresetAmount] = useState("");
 
     useEffect(() => {
         const fetchSettings = async () => {
@@ -97,6 +100,7 @@ export default function AdminSettingsPage() {
                             placeId: true,
                             category: true,
                         },
+                        presetAmounts: data.presetAmounts || [500, 1000, 2000, 5000, 10000],
                     });
                 } else {
                     toast.error("Failed to load settings");
@@ -269,6 +273,85 @@ export default function AdminSettingsPage() {
                 </Card>
 
                 {/* Payment Configuration removed as per user request */}
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Donation Amount Presets</CardTitle>
+                        <CardDescription>
+                            Configure the preset amount buttons shown on the public donation page.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="flex flex-wrap gap-2">
+                            {settings.presetAmounts
+                                .sort((a: number, b: number) => a - b)
+                                .map((amt: number) => (
+                                    <div
+                                        key={amt}
+                                        className="flex items-center gap-1 bg-yellow-100 border border-yellow-300 rounded-full px-3 py-1.5 text-sm font-medium"
+                                    >
+                                        <span>₹{amt.toLocaleString("en-IN")}</span>
+                                        <button
+                                            onClick={() =>
+                                                setSettings((prev) => ({
+                                                    ...prev,
+                                                    presetAmounts: prev.presetAmounts.filter(
+                                                        (a: number) => a !== amt
+                                                    ),
+                                                }))
+                                            }
+                                            className="ml-1 text-red-500 hover:text-red-700 rounded-full hover:bg-red-100 p-0.5 transition-colors"
+                                        >
+                                            <X className="w-3.5 h-3.5" />
+                                        </button>
+                                    </div>
+                                ))}
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <Input
+                                placeholder="Enter amount (e.g. 3000)"
+                                value={newPresetAmount}
+                                onChange={(e) => {
+                                    if (/^\d*$/.test(e.target.value)) {
+                                        setNewPresetAmount(e.target.value);
+                                    }
+                                }}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter" && newPresetAmount) {
+                                        const num = parseInt(newPresetAmount);
+                                        if (num > 0 && !settings.presetAmounts.includes(num)) {
+                                            setSettings((prev) => ({
+                                                ...prev,
+                                                presetAmounts: [...prev.presetAmounts, num],
+                                            }));
+                                            setNewPresetAmount("");
+                                        }
+                                    }
+                                }}
+                                className="max-w-[200px]"
+                                type="text"
+                                inputMode="numeric"
+                            />
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                    const num = parseInt(newPresetAmount);
+                                    if (num > 0 && !settings.presetAmounts.includes(num)) {
+                                        setSettings((prev) => ({
+                                            ...prev,
+                                            presetAmounts: [...prev.presetAmounts, num],
+                                        }));
+                                        setNewPresetAmount("");
+                                    }
+                                }}
+                                disabled={!newPresetAmount}
+                            >
+                                <Plus className="w-4 h-4 mr-1" /> Add
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
 
             <Card>

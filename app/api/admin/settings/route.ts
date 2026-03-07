@@ -44,7 +44,8 @@ export async function PUT(req: Request) {
             receiptImage,
             receiptConfig,
             displayStatuses,
-            editableFields
+            editableFields,
+            presetAmounts
         } = body;
 
         // We assume a singleton pattern for settings, so we update the first record found
@@ -64,6 +65,7 @@ export async function PUT(req: Request) {
                     receiptConfig,
                     displayStatuses,
                     editableFields,
+                    presetAmounts,
                 },
             });
         } else {
@@ -77,6 +79,7 @@ export async function PUT(req: Request) {
                     receiptConfig,
                     displayStatuses,
                     editableFields,
+                    presetAmounts,
                 },
             });
         }

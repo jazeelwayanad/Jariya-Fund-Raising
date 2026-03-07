@@ -1,11 +1,55 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useEffect, useState, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Download, Share2, Loader2, X } from "lucide-react";
 import { toPng, toBlob } from "html-to-image";
 import { toast } from "sonner";
+
+function AutoFitText({ children, maxWidthPx, style, className }: {
+    children: React.ReactNode;
+    maxWidthPx: number;
+    style?: React.CSSProperties;
+    className?: string;
+}) {
+    const textRef = useRef<HTMLDivElement>(null);
+    const [scale, setScale] = useState(1);
+
+    const measure = useCallback(() => {
+        if (!textRef.current || !maxWidthPx) return;
+        const textWidth = textRef.current.scrollWidth / scale;
+        if (textWidth > maxWidthPx) {
+            setScale(maxWidthPx / textWidth);
+        } else {
+            setScale(1);
+        }
+    }, [maxWidthPx, scale]);
+
+    useEffect(() => {
+        measure();
+    }, [children, maxWidthPx]);
+
+    useEffect(() => {
+        window.addEventListener("resize", measure);
+        return () => window.removeEventListener("resize", measure);
+    }, [measure]);
+
+    return (
+        <div
+            ref={textRef}
+            className={className}
+            style={{
+                ...style,
+                transform: `${style?.transform || ''} scale(${scale})`.trim(),
+                transformOrigin: style?.textAlign === 'right' ? 'right center' : style?.textAlign === 'left' ? 'left center' : 'center center',
+                whiteSpace: 'nowrap',
+            }}
+        >
+            {children}
+        </div>
+    );
+}
 
 interface ViewReceiptDialogProps {
     open: boolean;
@@ -106,6 +150,28 @@ export function ViewReceiptDialog({ open, onOpenChange, donation, settings }: Vi
                                 let transform = "translate(-50%, -50%)"; // Default Center
                                 if (cfg.align === "left") transform = "translate(0, -50%)";
                                 if (cfg.align === "right") transform = "translate(-100%, -50%)";
+
+                                if (cfg.maxWidth) {
+                                    return (
+                                        <AutoFitText
+                                            key={field}
+                                            maxWidthPx={cfg.maxWidth}
+                                            className="absolute"
+                                            style={{
+                                                left: `${cfg.x}%`,
+                                                top: `${cfg.y}%`,
+                                                transform: transform,
+                                                fontSize: `${cfg.fontSize}px`,
+                                                color: cfg.color,
+                                                fontWeight: cfg.fontWeight || "bold",
+                                                letterSpacing: `${cfg.letterSpacing || 0}px`,
+                                                textAlign: cfg.align || "center",
+                                            }}
+                                        >
+                                            {value}
+                                        </AutoFitText>
+                                    );
+                                }
 
                                 return (
                                     <div

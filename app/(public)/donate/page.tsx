@@ -91,7 +91,7 @@ export default function DonatePage() {
     const batchDropdownRef = React.useRef<HTMLDivElement>(null)
     const countryDropdownRef = React.useRef<HTMLDivElement>(null)
 
-    const presets = ["500", "1,000", "2,000", "5,000", "10,000"]
+    const [presets, setPresets] = React.useState<number[]>([500, 1000, 2000, 5000, 10000])
 
     React.useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -151,6 +151,24 @@ export default function DonatePage() {
         }
         fetchData()
     }, [batchIdFromUrl])
+
+    // Fetch preset amounts from settings
+    React.useEffect(() => {
+        const fetchPresets = async () => {
+            try {
+                const res = await fetch("/api/public/settings")
+                if (res.ok) {
+                    const data = await res.json()
+                    if (Array.isArray(data.presetAmounts) && data.presetAmounts.length > 0) {
+                        setPresets(data.presetAmounts.sort((a: number, b: number) => a - b))
+                    }
+                }
+            } catch (error) {
+                console.error("Error loading preset amounts", error)
+            }
+        }
+        fetchPresets()
+    }, [])
 
     // Get all places under the active section (flattened from districts)
     const allSectionPlaces = React.useMemo(() => {
@@ -536,10 +554,10 @@ export default function DonatePage() {
                             {presets.map((val) => (
                                 <button
                                     key={val}
-                                    onClick={() => setAmount(val.replace(/,/g, ''))}
+                                    onClick={() => setAmount(String(val))}
                                     className="bg-[#FDE68A] hover:bg-[#ffe066] text-black/90 text-[10px] sm:text-[11px] font-bold py-1.5 px-3 sm:px-3.5 rounded-full transition-all"
                                 >
-                                    ₹{val}
+                                    ₹{val.toLocaleString("en-IN")}
                                 </button>
                             ))}
                         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +16,50 @@ import {
 } from "@/components/ui/select";
 import { Move, Type, Calendar, DollarSign, Save, AlignLeft, AlignCenter, AlignRight, Bold } from "lucide-react";
 
+function AutoFitText({ children, maxWidthPx, style, className }: {
+    children: React.ReactNode;
+    maxWidthPx: number;
+    style?: React.CSSProperties;
+    className?: string;
+}) {
+    const textRef = useRef<HTMLDivElement>(null);
+    const [scale, setScale] = useState(1);
+
+    const measure = useCallback(() => {
+        if (!textRef.current || !maxWidthPx) return;
+        const textWidth = textRef.current.scrollWidth / scale;
+        if (textWidth > maxWidthPx) {
+            setScale(maxWidthPx / textWidth);
+        } else {
+            setScale(1);
+        }
+    }, [maxWidthPx, scale]);
+
+    useEffect(() => {
+        measure();
+    }, [children, maxWidthPx]);
+
+    useEffect(() => {
+        window.addEventListener("resize", measure);
+        return () => window.removeEventListener("resize", measure);
+    }, [measure]);
+
+    return (
+        <div
+            ref={textRef}
+            className={className}
+            style={{
+                ...style,
+                transform: `${style?.transform || ''} scale(${scale})`.trim(),
+                transformOrigin: style?.textAlign === 'right' ? 'right center' : style?.textAlign === 'left' ? 'left center' : 'center center',
+                whiteSpace: 'nowrap',
+            }}
+        >
+            {children}
+        </div>
+    );
+}
+
 interface Config {
     x: number;
     y: number;
@@ -24,6 +68,7 @@ interface Config {
     align?: "left" | "center" | "right";
     fontWeight?: "normal" | "bold" | "600";
     letterSpacing?: number;
+    maxWidth?: number;
 }
 
 interface ReceiptConfig {
@@ -114,6 +159,40 @@ export function ReceiptEditor({ imageUrl, config, onSave }: ReceiptEditorProps) 
         setSelectedField(field);
     };
 
+    const handleFieldClick = (e: React.MouseEvent, field: string) => {
+        e.stopPropagation();
+        setSelectedField(field);
+    };
+
+    // Arrow key movement for selected field
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (!selectedField || previewMode) return;
+            const step = e.shiftKey ? 0.1 : 0.5;
+            let handled = true;
+            switch (e.key) {
+                case "ArrowLeft":
+                    updateConfig(selectedField, { x: Math.max(0, Number((localConfig[selectedField as keyof ReceiptConfig].x - step).toFixed(2))) });
+                    break;
+                case "ArrowRight":
+                    updateConfig(selectedField, { x: Math.min(100, Number((localConfig[selectedField as keyof ReceiptConfig].x + step).toFixed(2))) });
+                    break;
+                case "ArrowUp":
+                    updateConfig(selectedField, { y: Math.max(0, Number((localConfig[selectedField as keyof ReceiptConfig].y - step).toFixed(2))) });
+                    break;
+                case "ArrowDown":
+                    updateConfig(selectedField, { y: Math.min(100, Number((localConfig[selectedField as keyof ReceiptConfig].y + step).toFixed(2))) });
+                    break;
+                default:
+                    handled = false;
+            }
+            if (handled) e.preventDefault();
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [selectedField, previewMode, localConfig]);
+
     const getPreviewText = (field: string) => {
         switch (field) {
             case "name": return "John Doe";
@@ -171,7 +250,70 @@ export function ReceiptEditor({ imageUrl, config, onSave }: ReceiptEditorProps) 
                             if (cfg.align === "left") transform = "translate(0, -50%)";
                             if (cfg.align === "right") transform = "translate(-100%, -50%)";
 
-                            return (
+                            return cfg.maxWidth ? (
+                                <div
+                                    key={field}
+                                    className={`absolute transition-all duration-150 ease-out
+                                        ${!previewMode
+                                            ? "cursor-grab hover:bg-primary/5"
+                                            : ""
+                                        }
+                                        ${!previewMode && isSelected
+                                            ? "z-10"
+                                            : ""
+                                        }
+                                    `}
+                                    style={{
+                                        left: `${cfg.x}%`,
+                                        top: `${cfg.y}%`,
+                                        transform: transform,
+                                        width: `${cfg.maxWidth}px`,
+                                        pointerEvents: previewMode ? "none" : "auto",
+                                    }}
+                                    onMouseDown={(e) => handleMouseDown(e, field)}
+                                    onClick={(e) => handleFieldClick(e, field)}
+                                >
+                                    {/* Width boundary box - visible in edit mode */}
+                                    {!previewMode && (
+                                        <div
+                                            className={`absolute inset-0 ${isSelected ? 'border-2 border-dashed border-orange-400 bg-orange-50/20' : 'border border-dashed border-slate-300/60'}`}
+                                            style={{ borderRadius: '4px' }}
+                                        />
+                                    )}
+
+                                    <AutoFitText
+                                        maxWidthPx={cfg.maxWidth}
+                                        className="w-full"
+                                        style={{
+                                            fontSize: `${cfg.fontSize}px`,
+                                            color: cfg.color,
+                                            fontWeight: cfg.fontWeight || "600",
+                                            letterSpacing: `${cfg.letterSpacing || 0}px`,
+                                            padding: previewMode ? 0 : '4px 8px',
+                                            textAlign: cfg.align || "center",
+                                        }}
+                                    >
+                                        {previewMode ? getPreviewText(field) : field.toUpperCase()}
+                                    </AutoFitText>
+
+                                    {/* Max width label */}
+                                    {!previewMode && isSelected && (
+                                        <div className="absolute -top-5 left-0 right-0 flex justify-center">
+                                            <span className="text-[9px] font-mono bg-orange-400 text-white px-1.5 py-0.5 rounded-sm">{cfg.maxWidth}px</span>
+                                        </div>
+                                    )}
+
+                                    {/* Resize Handles */}
+                                    {!previewMode && isSelected && (
+                                        <>
+                                            <div className="absolute -top-[5px] -left-[5px] w-2.5 h-2.5 bg-white border-[1.5px] border-orange-400 rounded-full shadow-sm"></div>
+                                            <div className="absolute -top-[5px] -right-[5px] w-2.5 h-2.5 bg-white border-[1.5px] border-orange-400 rounded-full shadow-sm"></div>
+                                            <div className="absolute -bottom-[5px] -left-[5px] w-2.5 h-2.5 bg-white border-[1.5px] border-orange-400 rounded-full shadow-sm"></div>
+                                            <div className="absolute -bottom-[5px] -right-[5px] w-2.5 h-2.5 bg-white border-[1.5px] border-orange-400 rounded-full shadow-sm"></div>
+                                        </>
+                                    )}
+                                </div>
+                            ) : (
                                 <div
                                     key={field}
                                     className={`absolute flex items-center whitespace-nowrap transition-all duration-150 ease-out
@@ -200,15 +342,13 @@ export function ReceiptEditor({ imageUrl, config, onSave }: ReceiptEditorProps) 
                                         textAlign: cfg.align || "center",
                                     }}
                                     onMouseDown={(e) => handleMouseDown(e, field)}
+                                    onClick={(e) => handleFieldClick(e, field)}
                                 >
                                     {previewMode ? getPreviewText(field) : field.toUpperCase()}
 
-                                    {/* Alignment Indicator (Optional visual aid) */}
                                     {!previewMode && isSelected && (
                                         <div className={`absolute top-0 bottom-0 w-px bg-primary/50 ${cfg.align === 'left' ? '-left-4' : cfg.align === 'right' ? '-right-4' : 'left-1/2 -translate-x-1/2 h-[200%] -top-1/2'}`} style={{ opacity: 0.2 }}></div>
                                     )}
-
-                                    {/* Clean Resize Handles (Figma Style) */}
                                     {!previewMode && isSelected && (
                                         <>
                                             <div className="absolute -top-[5px] -left-[5px] w-2.5 h-2.5 bg-white border-[1.5px] border-primary rounded-full shadow-sm"></div>
@@ -386,6 +526,34 @@ export function ReceiptEditor({ imageUrl, config, onSave }: ReceiptEditorProps) 
                                                 onValueChange={(vals) => updateConfig(selectedField, { letterSpacing: vals[0] })}
                                                 className="py-1"
                                             />
+                                        </div>
+
+                                        {/* Max Width */}
+                                        <div className="space-y-3">
+                                            <div className="flex justify-between items-center">
+                                                <Label className="text-xs">Max Width</Label>
+                                                <div className="flex items-center gap-1">
+                                                    <Input
+                                                        type="number"
+                                                        min={0}
+                                                        max={500}
+                                                        step={1}
+                                                        value={localConfig[selectedField as keyof ReceiptConfig].maxWidth || 0}
+                                                        onChange={(e) => updateConfig(selectedField, { maxWidth: Math.max(0, parseInt(e.target.value) || 0) })}
+                                                        className="h-6 w-16 text-xs font-mono text-right px-1.5"
+                                                    />
+                                                    <span className="text-xs text-muted-foreground">px</span>
+                                                </div>
+                                            </div>
+                                            <Slider
+                                                value={[localConfig[selectedField as keyof ReceiptConfig].maxWidth || 0]}
+                                                min={0}
+                                                max={500}
+                                                step={1}
+                                                onValueChange={(vals) => updateConfig(selectedField, { maxWidth: vals[0] })}
+                                                className="py-1"
+                                            />
+                                            <p className="text-[10px] text-muted-foreground">Set to 0 for no limit. Text will scale to fit within this width.</p>
                                         </div>
 
                                         <div className="space-y-2">

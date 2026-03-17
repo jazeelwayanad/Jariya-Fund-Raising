@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import {
     Table,
     TableBody,
@@ -85,8 +85,12 @@ interface Place {
 
 export default function AdminDonationsPage() {
     const [donations, setDonations] = useState<Donation[]>([])
+    const [total, setTotal] = useState(0)
+    const [totalPages, setTotalPages] = useState(1)
     const [loading, setLoading] = useState(true)
     const [searchQuery, setSearchQuery] = useState("")
+    const [debouncedSearch, setDebouncedSearch] = useState("")
+    const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
     // Filters
     const [statusFilter, setStatusFilter] = useState<string>("ALL")
@@ -139,23 +143,26 @@ export default function AdminDonationsPage() {
     const [selectedDonation, setSelectedDonation] = useState<Donation | null>(null)
     const [settings, setSettings] = useState<any>(null)
 
-    useEffect(() => {
-        fetchDonations()
-        fetchMetadata()
-    }, [])
-
-    const isEditable = (field: string) => {
-        if (!settings?.editableFields) return true // Default to editable if settings not loaded or legacy
-        return settings.editableFields[field] !== false
-    }
-
-    const fetchDonations = async () => {
+    const fetchDonations = useCallback(async () => {
         setLoading(true)
         try {
-            const res = await fetch("/api/admin/donations")
+            const params = new URLSearchParams()
+            params.set('page', String(currentPage))
+            params.set('limit', String(itemsPerPage))
+            if (statusFilter   !== 'ALL') params.set('status',   statusFilter)
+            if (methodFilter   !== 'ALL') params.set('method',   methodFilter)
+            if (categoryFilter !== 'ALL') params.set('category', categoryFilter)
+            if (batchFilter    !== 'ALL') params.set('batchId',  batchFilter)
+            if (unitFilter     !== 'ALL') params.set('unitId',   unitFilter)
+            if (placeFilter    !== 'ALL') params.set('placeId',  placeFilter)
+            if (debouncedSearch.trim())   params.set('search',   debouncedSearch.trim())
+
+            const res = await fetch(`/api/admin/donations?${params.toString()}`)
             if (res.ok) {
-                const data = await res.json()
-                setDonations(data)
+                const json = await res.json()
+                setDonations(json.data)
+                setTotal(json.total)
+                setTotalPages(json.totalPages)
             } else {
                 toast.error("Failed to fetch donations")
             }
@@ -165,6 +172,14 @@ export default function AdminDonationsPage() {
         } finally {
             setLoading(false)
         }
+    }, [currentPage, itemsPerPage, statusFilter, methodFilter, categoryFilter, batchFilter, unitFilter, placeFilter, debouncedSearch])
+
+    useEffect(() => { fetchDonations() }, [fetchDonations])
+    useEffect(() => { fetchMetadata() }, [])
+
+    const isEditable = (field: string) => {
+        if (!settings?.editableFields) return true
+        return settings.editableFields[field] !== false
     }
 
     const fetchMetadata = async () => {
@@ -205,48 +220,24 @@ export default function AdminDonationsPage() {
         }
     }
 
-    const filteredDonations = donations.filter((d) => {
-        const matchesSearch = (d.name?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-            (d.transactionId?.toLowerCase() || "").includes(searchQuery.toLowerCase()) ||
-            (d.mobile || "").includes(searchQuery) ||
-            (d.id.toLowerCase().includes(searchQuery.toLowerCase())) ||
-            (d.batch?.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (d.unit?.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (d.place?.name || "").toLowerCase().includes(searchQuery.toLowerCase())
+    // Derived display values (server already returned the correct slice)
+    const startItem = total === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1
+    const endItem   = Math.min(currentPage * itemsPerPage, total)
 
-        const matchesStatus = statusFilter === "ALL" || d.paymentStatus === statusFilter
-        const matchesMethod = methodFilter === "ALL" || d.paymentMethod === methodFilter
-        const matchesBatch = batchFilter === "ALL" || (d.batch?.id === batchFilter)
-
-        // Match explicit Unit ID OR if the donation's Place is part of the selected Unit
-        const matchesUnit = unitFilter === "ALL" ||
-            (d.unit?.id === unitFilter) ||
-            (d.place?.id ? units.find(u => u.id === unitFilter)?.placeIds.includes(d.place.id) : false)
-
-        const matchesPlace = placeFilter === "ALL" || (d.place?.id === placeFilter)
-        const matchesCategory = categoryFilter === "ALL" || (d.category === categoryFilter)
-
-        return matchesSearch && matchesStatus && matchesMethod && matchesBatch && matchesUnit && matchesPlace && matchesCategory
-    })
-
-    const totalPages = Math.max(1, Math.ceil(filteredDonations.length / itemsPerPage))
-    const paginatedDonations = filteredDonations.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage
-    )
-
-    // Reset to page 1 whenever filters or search change
-    const handleSearchChange = (val: string) => { setSearchQuery(val); setCurrentPage(1) }
-    const handleStatusFilter = (val: string) => { setStatusFilter(val); setCurrentPage(1) }
-    const handleMethodFilter = (val: string) => { setMethodFilter(val); setCurrentPage(1) }
+    // Handlers — reset to page 1 on any filter change
+    const handleSearchChange = (val: string) => {
+        setSearchQuery(val)
+        setCurrentPage(1)
+        if (debounceTimer.current) clearTimeout(debounceTimer.current)
+        debounceTimer.current = setTimeout(() => setDebouncedSearch(val), 300)
+    }
+    const handleStatusFilter   = (val: string) => { setStatusFilter(val);   setCurrentPage(1) }
+    const handleMethodFilter   = (val: string) => { setMethodFilter(val);   setCurrentPage(1) }
     const handleCategoryFilter = (val: string) => { setCategoryFilter(val); setCurrentPage(1) }
-    const handleBatchFilter = (val: string) => { setBatchFilter(val); setCurrentPage(1) }
-    const handleUnitFilter = (val: string) => { setUnitFilter(val); setCurrentPage(1) }
-    const handlePlaceFilter = (val: string) => { setPlaceFilter(val); setCurrentPage(1) }
+    const handleBatchFilter    = (val: string) => { setBatchFilter(val);    setCurrentPage(1) }
+    const handleUnitFilter     = (val: string) => { setUnitFilter(val);     setCurrentPage(1) }
+    const handlePlaceFilter    = (val: string) => { setPlaceFilter(val);    setCurrentPage(1) }
     const handleItemsPerPageChange = (val: string) => { setItemsPerPage(Number(val)); setCurrentPage(1) }
-
-    const startItem = filteredDonations.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1
-    const endItem = Math.min(currentPage * itemsPerPage, filteredDonations.length)
 
 
     const handleStatusChange = async (id: string, newStatus: string) => {
@@ -377,7 +368,7 @@ export default function AdminDonationsPage() {
         const headers = ["ID", "Date", "Category", "Name", "Mobile", "Amount", "Method", "Transaction ID", "Status", "Batch", "Coordinator", "Unit", "Place"]
         const csvContent = [
             headers.join(","),
-            ...filteredDonations.map(d => [
+            ...donations.map((d: Donation) => [
                 d.id,
                 new Date(d.createdAt).toLocaleDateString(),
                 d.category,
@@ -856,14 +847,14 @@ export default function AdminDonationsPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {filteredDonations.length === 0 ? (
+                        {donations.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
                                     No donations found matching criteria.
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            paginatedDonations.map((donation) => (
+                            donations.map((donation) => (
                                 <TableRow key={donation.id} className={donation.hideName ? "" : ""}>
                                     <TableCell className="font-medium text-xs font-mono text-muted-foreground">
                                         {donation.id.substring(0, 8)}... {donation.hideName && <Badge variant="outline" className="ml-1 text-[10px] border-amber-200 text-amber-700">Name Hidden</Badge>}
@@ -1044,7 +1035,7 @@ export default function AdminDonationsPage() {
             </div>
 
             {/* Gmail-style Pagination */}
-            {filteredDonations.length > 0 && (
+            {total > 0 && (
                 <div className="flex items-center justify-end gap-3 py-2 px-1">
                     <Select value={String(itemsPerPage)} onValueChange={handleItemsPerPageChange}>
                         <SelectTrigger className="w-[110px] h-8 text-sm bg-white border-gray-200">
@@ -1057,7 +1048,7 @@ export default function AdminDonationsPage() {
                         </SelectContent>
                     </Select>
                     <span className="text-sm text-muted-foreground select-none">
-                        {startItem}–{endItem} of {filteredDonations.length}
+                        {startItem}–{endItem} of {total}
                     </span>
                     <div className="flex items-center gap-0.5">
                         <Button

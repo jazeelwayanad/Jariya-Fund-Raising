@@ -1,63 +1,78 @@
 
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { PaymentStatus, PaymentMethod } from '@prisma/client';
+import { PaymentStatus, PaymentMethod, DonationCategory } from '@prisma/client';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
     try {
         const { searchParams } = new URL(request.url);
-        const batchId = searchParams.get('batchId');
-        const unitId = searchParams.get('unitId');
-        const status = searchParams.get('status');
-        const search = searchParams.get('search');
+
+        // Pagination
+        const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
+        const limit = Math.min(200, Math.max(1, parseInt(searchParams.get('limit') || '50', 10)));
+        const skip = (page - 1) * limit;
+
+        // Filters
+        const batchId  = searchParams.get('batchId');
+        const unitId   = searchParams.get('unitId');
+        const placeId  = searchParams.get('placeId');
+        const status   = searchParams.get('status');
+        const method   = searchParams.get('method');
+        const category = searchParams.get('category');
+        const search   = searchParams.get('search');
 
         const where: any = {};
 
-        if (batchId) where.batchId = batchId;
-        if (unitId) where.unitId = unitId;
+        if (batchId)  where.batchId  = batchId;
+        if (unitId)   where.unitId   = unitId;
+        if (placeId)  where.placeId  = placeId;
+        if (method)   where.paymentMethod = method as PaymentMethod;
+        if (category) where.category = category as DonationCategory;
 
-        // If specific status requested (e.g. from filter dropdown), use it
         if (status) {
             where.paymentStatus = status as PaymentStatus;
         } else {
-            // Otherwise, apply global display settings
             const settings = await prisma.settings.findFirst();
-            const displayStatuses = settings?.displayStatuses || ["SUCCESS"]; // Default safe fallback
+            const displayStatuses = settings?.displayStatuses ?? ['SUCCESS'];
             where.paymentStatus = { in: displayStatuses };
         }
 
         if (search) {
             where.OR = [
-                { name: { contains: search, mode: 'insensitive' } },
+                { name:          { contains: search, mode: 'insensitive' } },
                 { transactionId: { contains: search, mode: 'insensitive' } },
-                { mobile: { contains: search, mode: 'insensitive' } },
+                { mobile:        { contains: search, mode: 'insensitive' } },
+                { id:            { contains: search, mode: 'insensitive' } },
             ];
         }
 
-        const donations = await prisma.donation.findMany({
-            where,
-            include: {
-                batch: {
-                    select: {
-                        id: true,
-                        name: true,
-                    }
-                },
-                collectedBy: {
-                    select: {
-                        name: true,
-                        username: true
-                    }
-                },
-                unit: { select: { id: true, name: true } },
-                place: { select: { id: true, name: true } },
-            },
-            orderBy: { createdAt: 'desc' },
-        });
+        const include = {
+            batch:       { select: { id: true, name: true } },
+            collectedBy: { select: { name: true, username: true } },
+            unit:        { select: { id: true, name: true } },
+            place:       { select: { id: true, name: true } },
+        };
 
-        return NextResponse.json(donations);
+        const [total, data] = await prisma.$transaction([
+            prisma.donation.count({ where }),
+            prisma.donation.findMany({
+                where,
+                include,
+                orderBy: { createdAt: 'desc' },
+                skip,
+                take: limit,
+            }),
+        ]);
+
+        return NextResponse.json({
+            data,
+            total,
+            page,
+            limit,
+            totalPages: Math.max(1, Math.ceil(total / limit)),
+        });
     } catch (error) {
         console.error('Error fetching donations:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

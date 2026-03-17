@@ -37,7 +37,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
-import { MoreHorizontal, Check, X, Trash, Loader2, Download, Plus, FileText, Search, Pencil } from "lucide-react"
+import { MoreHorizontal, Check, X, Trash, Loader2, Download, Plus, FileText, Search, Pencil, ChevronLeft, ChevronRight } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { toast } from "sonner"
 import { ViewReceiptDialog } from "@/components/ViewReceiptDialog"
@@ -95,6 +95,10 @@ export default function AdminDonationsPage() {
     const [unitFilter, setUnitFilter] = useState<string>("ALL")
     const [placeFilter, setPlaceFilter] = useState<string>("ALL")
     const [categoryFilter, setCategoryFilter] = useState<string>("ALL")
+
+    // Pagination
+    const [currentPage, setCurrentPage] = useState(1)
+    const [itemsPerPage, setItemsPerPage] = useState(50)
 
     // Manual Entry Data
     const [batches, setBatches] = useState<Batch[]>([])
@@ -224,6 +228,25 @@ export default function AdminDonationsPage() {
 
         return matchesSearch && matchesStatus && matchesMethod && matchesBatch && matchesUnit && matchesPlace && matchesCategory
     })
+
+    const totalPages = Math.max(1, Math.ceil(filteredDonations.length / itemsPerPage))
+    const paginatedDonations = filteredDonations.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    )
+
+    // Reset to page 1 whenever filters or search change
+    const handleSearchChange = (val: string) => { setSearchQuery(val); setCurrentPage(1) }
+    const handleStatusFilter = (val: string) => { setStatusFilter(val); setCurrentPage(1) }
+    const handleMethodFilter = (val: string) => { setMethodFilter(val); setCurrentPage(1) }
+    const handleCategoryFilter = (val: string) => { setCategoryFilter(val); setCurrentPage(1) }
+    const handleBatchFilter = (val: string) => { setBatchFilter(val); setCurrentPage(1) }
+    const handleUnitFilter = (val: string) => { setUnitFilter(val); setCurrentPage(1) }
+    const handlePlaceFilter = (val: string) => { setPlaceFilter(val); setCurrentPage(1) }
+    const handleItemsPerPageChange = (val: string) => { setItemsPerPage(Number(val)); setCurrentPage(1) }
+
+    const startItem = filteredDonations.length === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1
+    const endItem = Math.min(currentPage * itemsPerPage, filteredDonations.length)
 
 
     const handleStatusChange = async (id: string, newStatus: string) => {
@@ -731,11 +754,11 @@ export default function AdminDonationsPage() {
                     <Input
                         placeholder="Search by name, ID or Transaction ID..."
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onChange={(e) => handleSearchChange(e.target.value)}
                         className="pl-8 bg-white"
                     />
                 </div>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <Select value={statusFilter} onValueChange={handleStatusFilter}>
                     <SelectTrigger className="w-[130px] bg-white">
                         <SelectValue placeholder="Status" />
                     </SelectTrigger>
@@ -746,7 +769,7 @@ export default function AdminDonationsPage() {
                         <SelectItem value="FAILED">Failed</SelectItem>
                     </SelectContent>
                 </Select>
-                <Select value={methodFilter} onValueChange={setMethodFilter}>
+                <Select value={methodFilter} onValueChange={handleMethodFilter}>
                     <SelectTrigger className="w-[140px] bg-white">
                         <SelectValue placeholder="Payment Method" />
                     </SelectTrigger>
@@ -759,7 +782,7 @@ export default function AdminDonationsPage() {
                         <SelectItem value="BANK_TRANSFER">Bank Transfer</SelectItem>
                     </SelectContent>
                 </Select>
-                <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <Select value={categoryFilter} onValueChange={handleCategoryFilter}>
                     <SelectTrigger className="w-[140px] bg-white">
                         <SelectValue placeholder="Category" />
                     </SelectTrigger>
@@ -770,7 +793,7 @@ export default function AdminDonationsPage() {
                         <SelectItem value="PARENT">Parents</SelectItem>
                     </SelectContent>
                 </Select>
-                <Select value={batchFilter} onValueChange={setBatchFilter}>
+                <Select value={batchFilter} onValueChange={handleBatchFilter}>
                     <SelectTrigger className="w-[140px] bg-white">
                         <SelectValue placeholder="Batch" />
                     </SelectTrigger>
@@ -784,7 +807,7 @@ export default function AdminDonationsPage() {
                     </SelectContent>
                 </Select>
 
-                <Select value={unitFilter} onValueChange={setUnitFilter}>
+                <Select value={unitFilter} onValueChange={handleUnitFilter}>
                     <SelectTrigger className="w-[140px] bg-white">
                         <SelectValue placeholder="Unit" />
                     </SelectTrigger>
@@ -801,7 +824,7 @@ export default function AdminDonationsPage() {
                     </SelectContent>
                 </Select>
 
-                <Select value={placeFilter} onValueChange={setPlaceFilter}>
+                <Select value={placeFilter} onValueChange={handlePlaceFilter}>
                     <SelectTrigger className="w-[140px] bg-white">
                         <SelectValue placeholder="Place" />
                     </SelectTrigger>
@@ -840,7 +863,7 @@ export default function AdminDonationsPage() {
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            filteredDonations.map((donation) => (
+                            paginatedDonations.map((donation) => (
                                 <TableRow key={donation.id} className={donation.hideName ? "" : ""}>
                                     <TableCell className="font-medium text-xs font-mono text-muted-foreground">
                                         {donation.id.substring(0, 8)}... {donation.hideName && <Badge variant="outline" className="ml-1 text-[10px] border-amber-200 text-amber-700">Name Hidden</Badge>}
@@ -1019,6 +1042,45 @@ export default function AdminDonationsPage() {
                     </TableBody>
                 </Table>
             </div>
+
+            {/* Gmail-style Pagination */}
+            {filteredDonations.length > 0 && (
+                <div className="flex items-center justify-end gap-3 py-2 px-1">
+                    <Select value={String(itemsPerPage)} onValueChange={handleItemsPerPageChange}>
+                        <SelectTrigger className="w-[110px] h-8 text-sm bg-white border-gray-200">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="25">25 per page</SelectItem>
+                            <SelectItem value="50">50 per page</SelectItem>
+                            <SelectItem value="100">100 per page</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <span className="text-sm text-muted-foreground select-none">
+                        {startItem}–{endItem} of {filteredDonations.length}
+                    </span>
+                    <div className="flex items-center gap-0.5">
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 rounded-full hover:bg-gray-100"
+                            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                        >
+                            <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 rounded-full hover:bg-gray-100"
+                            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                        >
+                            <ChevronRight className="h-4 w-4" />
+                        </Button>
+                    </div>
+                </div>
+            )}
 
             {/* Receipt Dialog */}
             <ViewReceiptDialog

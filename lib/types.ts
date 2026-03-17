@@ -1,5 +1,10 @@
 export type Role = 'SUPERADMIN' | 'STAFF' | 'VIEWER';
 export type PaymentMethod = 'UPI' | 'QR' | 'RAZORPAY' | 'CASH';
+
+
+
+
+
 export type PaymentStatus = 'PENDING' | 'SUCCESS' | 'FAILED';
 
 export interface User {
